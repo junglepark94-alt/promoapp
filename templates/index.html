@@ -39,7 +39,10 @@
   }
   .logo { display:flex; align-items:center; gap:10px; color:white; font-size:15px; font-weight:700; letter-spacing:-0.3px; }
   .logo-icon-img { width:34px; height:34px; object-fit:contain; flex-shrink:0; }
-  .hamburger { display:none; flex-direction:column; justify-content:center; gap:5px; cursor:pointer; background:none; border:none; padding:6px; margin-left:auto; }
+  .admin-link { color:rgba(255,255,255,0.65); text-decoration:none; font-size:12px; font-weight:500; padding:5px 11px; border-radius:6px; border:1px solid rgba(255,255,255,0.22); white-space:nowrap; transition:all 0.2s; }
+  .admin-link:hover { background:rgba(255,255,255,0.12); color:white; }
+  .header-right { display:flex; align-items:center; gap:12px; margin-left:auto; }
+  .hamburger { display:none; flex-direction:column; justify-content:center; gap:5px; cursor:pointer; background:none; border:none; padding:6px; }
   .hamburger span { display:block; width:22px; height:2px; background:white; border-radius:2px; transition:all 0.25s; }
   .hamburger.open span:nth-child(1) { transform:translateY(7px) rotate(45deg); }
   .hamburger.open span:nth-child(2) { opacity:0; }
@@ -253,8 +256,11 @@
   .col-product { font-weight:500; max-width:220px; }
   .col-note { color:var(--muted); font-size:12px; max-width:260px; }
   .col-ts { color:var(--muted); font-size:11px; white-space:nowrap; font-family:'DM Mono',monospace; }
-  .del-btn { background:none; border:1px solid #fca5a5; color:var(--danger); cursor:pointer; border-radius:5px; padding:3px 8px; font-size:11px; font-family:'Noto Sans KR',sans-serif; transition:all 0.15s; }
-  .del-btn:hover { background:#fee2e2; }
+  .del-btn  { background:none; border:1px solid #fca5a5; color:var(--danger); cursor:pointer; border-radius:5px; padding:3px 8px; font-size:11px; font-family:'Noto Sans KR',sans-serif; transition:all 0.15s; }
+  .del-btn:hover  { background:#fee2e2; }
+  .edit-btn { background:none; border:1px solid var(--border); color:var(--muted); cursor:pointer; border-radius:5px; padding:3px 8px; font-size:11px; font-family:'Noto Sans KR',sans-serif; transition:all 0.15s; margin-right:4px; }
+  .edit-btn:hover { background:var(--accent); color:var(--text); border-color:var(--sky); }
+  .approved-mark { color:var(--success); font-weight:700; font-size:13px; margin-right:3px; }
   .empty-row td { text-align:center; padding:48px; color:var(--muted); font-size:14px; }
 
   /* ── EMPTY ── */
@@ -334,9 +340,12 @@
     <img src="/static/favicon.ico" alt="빙그레" class="logo-icon-img">
     프로모션 일정 취합 시스템
   </div>
-  <button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="메뉴">
-    <span></span><span></span><span></span>
-  </button>
+  <div class="header-right">
+    <a href="/admin" class="admin-link">관리자 모드</a>
+    <button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="메뉴">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
 </header>
 <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
 
@@ -746,19 +755,65 @@
 </div>
 <div id="toast"></div>
 
-<!-- ── 관리자 인증 모달 ── -->
-<div class="modal-overlay hidden" id="adminModal" onclick="if(event.target===this)closeAdminModal()">
-  <div class="modal-box">
-    <div class="modal-title">🔒 관리자 인증</div>
-    <div class="modal-sub">삭제 기능은 관리자만 사용할 수 있습니다.<br>비밀번호를 입력해주세요.</div>
-    <input class="modal-input" type="password" id="adminPwInput" placeholder="비밀번호 입력"
-           onkeydown="if(event.key==='Enter')submitAdminPw()">
+<!-- ── 수정 모달 ── -->
+<div class="modal-overlay hidden" id="editModal" onclick="if(event.target===this)closeEditModal()">
+  <div class="modal-box" style="width:520px;max-width:95vw">
+    <div class="modal-title">✏️ 항목 수정</div>
+    <input type="hidden" id="editEntryId">
+    <input type="hidden" id="editSection">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <div class="field">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px">담당팀</label>
+        <select id="edit-team">
+          {% for t in teams %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px">담당자</label>
+        <input type="text" id="edit-name">
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:14px">
+      <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px">일정</label>
+      <input type="date" id="edit-schedule">
+      <label class="partial-toggle">
+        <input type="checkbox" id="edit-schedule-partial" onchange="toggleEditPartial()">
+        일자 미정 (월까지만)
+      </label>
+      <div class="partial-selects" id="edit-partial-selects">
+        <select id="edit-schedule-year">
+          <option value="">연도</option>
+          <option value="2026">2026년</option>
+          <option value="2027">2027년</option>
+        </select>
+        <select id="edit-schedule-month">
+          <option value="">월</option>
+          {% for m in range(1,13) %}<option value="{{ m }}">{{ m }}월</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:14px">
+      <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px">구분</label>
+      <select id="edit-category">
+        {% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+        {% for c in tasting_categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="field" style="margin-bottom:14px">
+      <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px">제품명 / 행사명</label>
+      <input type="text" id="edit-product">
+    </div>
+    <div class="field" style="margin-bottom:6px">
+      <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px">비고</label>
+      <textarea id="edit-note" style="min-height:60px"></textarea>
+    </div>
     <div class="modal-btns">
-      <button class="btn btn-outline" onclick="closeAdminModal()">취소</button>
-      <button class="btn btn-primary" onclick="submitAdminPw()">확인</button>
+      <button class="btn btn-outline" onclick="closeEditModal()">취소</button>
+      <button class="btn btn-primary" onclick="submitEdit()">저장</button>
     </div>
   </div>
 </div>
+
 
 <script>
 // ── 상태 ──────────────────────────────────────────────────
@@ -766,9 +821,9 @@ const state = {
   promo:   { entries: [], allData: [], teamData: [], year: 'all', month: 'all' },
   tasting: { entries: [], allData: [], teamData: [], year: 'all', month: 'all' }
 };
-let isAdmin = false;
-let pendingDeleteId = null;
-let pendingDeleteSection = null;
+const TEAMS_JS = {{ teams|tojson }};
+const CATS_PROMO   = {{ categories|tojson }};
+const CATS_TASTING = {{ tasting_categories|tojson }};
 
 // nav 아이템 목록 (패널별)
 const NAV_MAP = {
@@ -981,10 +1036,13 @@ function applyFilter(section) {
       <td class="col-team">${esc(d.team)}</td>
       <td>${esc(d.name)}</td>
       <td><span class="tag tag-${d.category}">${esc(d.category)}</span></td>
-      <td class="col-product">${esc(d.product)}</td>
+      <td class="col-product">${d.approved ? '<span class="approved-mark" title="승인됨">✓</span>' : ''}${esc(d.product)}</td>
       <td class="col-note">${esc(d.note||'')}</td>
       <td class="col-ts">${esc(d.submitted_at||'')}</td>
-      <td><button class="del-btn" onclick="deleteEntry('${d.id}','${section}')">삭제</button></td>
+      <td style="white-space:nowrap">
+        <button class="edit-btn" onclick="openEditById('${d.id}','${section}')">수정</button>
+        <button class="del-btn"  onclick="deleteEntry('${d.id}','${section}')">삭제</button>
+      </td>
     </tr>
   `).join('');
 }
@@ -997,48 +1055,92 @@ function resetFilters(section) {
 }
 
 async function deleteEntry(id, section) {
-  if (!isAdmin) {
-    pendingDeleteId = id;
-    pendingDeleteSection = section;
-    openAdminModal();
-    return;
-  }
   if (!confirm('이 항목을 삭제하시겠습니까?')) return;
-  const res = await fetch(`/api/delete/${id}`, { method:'DELETE' });
+  const res  = await fetch(`/api/delete/${id}`, { method:'DELETE' });
   const data = await res.json();
   if (data.success) { showToast('삭제되었습니다.', 'success'); loadAllData(section); }
-  else showToast(data.message || '삭제에 실패했습니다.', 'error');
+  else showToast(data.message || '삭제 실패', 'error');
 }
 
-function openAdminModal() {
-  document.getElementById('adminModal').classList.remove('hidden');
-  setTimeout(() => document.getElementById('adminPwInput').focus(), 50);
+// ── 수정 모달 ─────────────────────────────────────────────
+function toggleEditPartial() {
+  const checked = document.getElementById('edit-schedule-partial').checked;
+  document.getElementById('edit-schedule').style.display = checked ? 'none' : '';
+  document.getElementById('edit-partial-selects').classList.toggle('show', checked);
 }
 
-function closeAdminModal() {
-  document.getElementById('adminModal').classList.add('hidden');
-  pendingDeleteId = null;
-  pendingDeleteSection = null;
-}
+function openEditById(id, section) {
+  const d = state[section].allData.find(x => x.id === id);
+  if (!d) return;
 
-async function submitAdminPw() {
-  const pw = document.getElementById('adminPwInput').value;
-  const res = await fetch('/api/auth', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password: pw })
-  });
-  if (res.ok) {
-    isAdmin = true;
-    const did = pendingDeleteId;
-    const sid = pendingDeleteSection;
-    closeAdminModal();
-    showToast('관리자 인증 완료!', 'success');
-    if (did) deleteEntry(did, sid);
+  document.getElementById('editEntryId').value = id;
+  document.getElementById('editSection').value  = section;
+  document.getElementById('edit-team').value     = d.team     || '';
+  document.getElementById('edit-name').value     = d.name     || '';
+  document.getElementById('edit-product').value  = d.product  || '';
+  document.getElementById('edit-note').value     = d.note     || '';
+
+  // 구분 — 현재 section에 맞는 options 세팅
+  const cats = section === 'tasting' ? CATS_TASTING : CATS_PROMO;
+  const catSel = document.getElementById('edit-category');
+  catSel.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+  catSel.value = d.category || '';
+
+  // 일정
+  if (/^\d{4}-\d{2}$/.test(d.schedule)) {
+    const [y, m] = d.schedule.split('-');
+    document.getElementById('edit-schedule-partial').checked = true;
+    document.getElementById('edit-schedule-year').value  = y;
+    document.getElementById('edit-schedule-month').value = String(parseInt(m));
+    document.getElementById('edit-schedule').value = '';
   } else {
-    showToast('비밀번호가 올바르지 않습니다.', 'error');
-    document.getElementById('adminPwInput').select();
+    document.getElementById('edit-schedule-partial').checked = false;
+    document.getElementById('edit-schedule').value = d.schedule || '';
+    document.getElementById('edit-schedule-year').value  = '';
+    document.getElementById('edit-schedule-month').value = '';
   }
+  toggleEditPartial();
+
+  document.getElementById('editModal').classList.remove('hidden');
+}
+
+function closeEditModal() {
+  document.getElementById('editModal').classList.add('hidden');
+}
+
+async function submitEdit() {
+  const id      = document.getElementById('editEntryId').value;
+  const section = document.getElementById('editSection').value;
+
+  const partialChecked = document.getElementById('edit-schedule-partial').checked;
+  let schedule;
+  if (partialChecked) {
+    const yr = document.getElementById('edit-schedule-year').value;
+    const mo = document.getElementById('edit-schedule-month').value;
+    if (!yr || !mo) return showToast('연도와 월을 선택해주세요.', 'error');
+    schedule = `${yr}-${String(mo).padStart(2, '0')}`;
+  } else {
+    schedule = document.getElementById('edit-schedule').value;
+    if (!schedule) return showToast('일정을 입력해주세요.', 'error');
+  }
+
+  const body = {
+    team:     document.getElementById('edit-team').value,
+    name:     document.getElementById('edit-name').value,
+    schedule,
+    category: document.getElementById('edit-category').value,
+    product:  document.getElementById('edit-product').value,
+    note:     document.getElementById('edit-note').value,
+  };
+  if (!body.team || !body.name || !body.category || !body.product)
+    return showToast('필수 항목을 모두 입력해주세요.', 'error');
+
+  const res  = await fetch(`/api/update/${id}`, {
+    method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  if (data.success) { closeEditModal(); showToast('수정되었습니다.', 'success'); loadAllData(section); }
+  else showToast(data.message || '수정 실패', 'error');
 }
 
 // ── 폼 기능 ───────────────────────────────────────────────

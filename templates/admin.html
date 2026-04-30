@@ -4,129 +4,160 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>관리자 | 프로모션 일정 취합</title>
+<link rel="icon" type="image/x-icon" href="/static/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --navy: #0f1f3d;
-    --blue: #1a5bb7;
-    --sky: #3b9edd;
-    --accent: #e8f4fd;
-    --border: #d0e3f4;
-    --text: #1a2840;
-    --muted: #6b87a8;
+    --navy:    #6e1212;
+    --blue:    #c41e1e;
+    --sky:     #e05252;
+    --purple:  #1565c0;
+    --accent:  #fdf2f2;
+    --border:  #e8d4d4;
+    --text:    #1f1818;
+    --muted:   #806c6c;
     --success: #16a34a;
-    --danger: #dc2626;
-    --warn: #d97706;
-    --bg: #f4f8fd;
-    --card: #ffffff;
-    --white: #ffffff;
+    --danger:  #dc2626;
+    --warn:    #d97706;
+    --bg:      #fdf8f8;
+    --card:    #ffffff;
+    --white:   #ffffff;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
 
   header {
-    background: var(--navy);
-    padding: 0 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 60px;
-    position: sticky; top: 0; z-index: 100;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+    background:var(--navy); padding:0 28px; display:flex; align-items:center;
+    justify-content:space-between; height:60px; position:sticky; top:0; z-index:100;
+    box-shadow:0 2px 12px rgba(0,0,0,0.18);
   }
   .logo { display:flex; align-items:center; gap:10px; color:white; font-size:15px; font-weight:700; }
-  .logo-icon { width:32px; height:32px; background:linear-gradient(135deg,var(--sky),var(--blue)); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; }
-  .header-nav a { color:rgba(255,255,255,0.7); text-decoration:none; font-size:13px; font-weight:500; padding:6px 14px; border-radius:6px; transition:all 0.2s; }
+  .logo img { width:32px; height:32px; object-fit:contain; }
+  .header-nav { display:flex; align-items:center; gap:12px; }
+  .header-nav a { color:rgba(255,255,255,0.7); text-decoration:none; font-size:13px; font-weight:500;
+    padding:6px 14px; border-radius:6px; transition:all 0.2s; }
   .header-nav a:hover { background:rgba(255,255,255,0.12); color:white; }
 
-  main { max-width: 1200px; margin: 0 auto; padding: 32px 20px 80px; }
+  main { max-width:1300px; margin:0 auto; padding:32px 20px 80px; }
+
+  /* LOGIN */
+  .login-wrap { max-width:380px; margin:80px auto; background:var(--card); border:1px solid var(--border);
+    border-radius:16px; padding:36px; box-shadow:0 4px 24px rgba(110,18,18,0.1); text-align:center; }
+  .login-wrap h2 { font-size:18px; font-weight:700; color:var(--navy); margin-bottom:8px; }
+  .login-wrap p  { font-size:13px; color:var(--muted); margin-bottom:24px; }
+  .login-input { width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:8px;
+    font-family:'Noto Sans KR',sans-serif; font-size:14px; outline:none; margin-bottom:12px;
+    transition:border-color 0.2s; }
+  .login-input:focus { border-color:var(--sky); }
+
+  /* BTN */
+  .btn { padding:9px 18px; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:13px;
+    font-weight:600; cursor:pointer; transition:all 0.18s; border:none; display:inline-flex;
+    align-items:center; gap:6px; text-decoration:none; }
+  .btn-primary { background:var(--blue); color:white; box-shadow:0 2px 8px rgba(196,30,30,0.25); }
+  .btn-primary:hover { background:#a01515; }
+  .btn-outline { background:white; color:var(--blue); border:1.5px solid var(--border); }
+  .btn-outline:hover { border-color:var(--sky); background:var(--accent); }
+  .btn-success { background:var(--success); color:white; }
+  .btn-success:hover { background:#15803d; }
+  .btn-warn { background:#f59e0b; color:white; }
+  .btn-warn:hover { background:#d97706; }
+  .btn-sm { padding:4px 10px; font-size:11px; border-radius:5px; }
+  .btn:disabled { opacity:0.45; cursor:not-allowed; }
 
   /* TOOLBAR */
-  .toolbar {
-    display: flex; align-items: center; justify-content: space-between;
-    flex-wrap: wrap; gap: 14px;
-    margin-bottom: 24px;
-  }
-  .toolbar-title { font-size: 20px; font-weight: 700; color: var(--navy); }
+  .toolbar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap;
+    gap:14px; margin-bottom:24px; }
+  .toolbar-title { font-size:20px; font-weight:700; color:var(--navy); }
   .toolbar-right { display:flex; gap:10px; flex-wrap:wrap; }
 
+  /* SECTION TABS */
+  .section-tabs { display:flex; gap:6px; margin-bottom:20px; }
+  .section-tab { padding:7px 20px; border-radius:20px; border:1.5px solid var(--border);
+    background:white; color:var(--muted); font-size:13px; font-weight:600; cursor:pointer;
+    transition:all 0.15s; font-family:'Noto Sans KR',sans-serif; }
+  .section-tab:hover { border-color:var(--sky); color:var(--text); }
+  .section-tab.active { background:var(--navy); border-color:var(--navy); color:white; }
+
   /* STATS */
-  .stats { display:grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:24px; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px; margin-bottom:24px; }
   .stat-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; }
-  .stat-num { font-size:28px; font-weight:700; color:var(--blue); font-family:'DM Mono',monospace; line-height:1; }
+  .stat-num { font-size:26px; font-weight:700; color:var(--blue); font-family:'DM Mono',monospace; line-height:1; }
+  .stat-num.green { color:var(--success); }
+  .stat-num.warn  { color:var(--warn); }
   .stat-label { font-size:12px; color:var(--muted); margin-top:4px; }
 
   /* FILTERS */
-  .filters {
-    background: var(--card); border: 1px solid var(--border); border-radius:12px;
-    padding: 16px 20px; margin-bottom: 20px;
-    display: flex; gap:14px; flex-wrap:wrap; align-items:flex-end;
-  }
+  .filters { background:var(--card); border:1px solid var(--border); border-radius:12px;
+    padding:14px 20px; margin-bottom:20px; display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end; }
   .filter-group { display:flex; flex-direction:column; gap:5px; }
   .filter-group label { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.4px; }
-  .filter-group select, .filter-group input {
-    padding:8px 12px; border:1.5px solid var(--border); border-radius:8px;
-    font-family:'Noto Sans KR',sans-serif; font-size:13px; color:var(--text);
-    background:var(--white); outline:none; transition:border-color 0.2s;
-    min-width:130px;
-  }
-  .filter-group select:focus, .filter-group input:focus { border-color:var(--sky); }
+  .filter-group select, .filter-group input { padding:8px 12px; border:1.5px solid var(--border);
+    border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:13px; color:var(--text);
+    background:var(--white); outline:none; min-width:120px; }
 
   /* TABLE */
-  .table-wrap { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; box-shadow:0 2px 12px rgba(15,31,61,0.06); }
-  table { width:100%; border-collapse:collapse; }
-  thead tr { background:linear-gradient(90deg, var(--navy) 0%, #1e3a6e 100%); }
-  thead th { padding:13px 14px; font-size:12px; font-weight:700; color:white; text-align:left; white-space:nowrap; letter-spacing:0.3px; }
+  .table-wrap { background:var(--card); border:1px solid var(--border); border-radius:14px;
+    overflow:hidden; box-shadow:0 2px 12px rgba(110,18,18,0.06); overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; min-width:900px; }
+  thead tr { background:linear-gradient(90deg,var(--navy) 0%,#8b1a1a 100%); }
+  thead th { padding:12px 14px; font-size:12px; font-weight:700; color:white; text-align:left;
+    white-space:nowrap; letter-spacing:0.3px; }
   tbody tr { border-bottom:1px solid var(--border); transition:background 0.12s; }
   tbody tr:last-child { border-bottom:none; }
-  tbody tr:hover { background:#f0f7ff; }
-  tbody td { padding:12px 14px; font-size:13px; vertical-align:top; line-height:1.5; }
+  tbody tr:hover { background:#fff0f0; }
+  tbody td { padding:11px 14px; font-size:13px; vertical-align:top; line-height:1.5; }
   .col-no { color:var(--muted); font-family:'DM Mono',monospace; font-size:11px; width:36px; }
   .col-schedule { white-space:nowrap; font-weight:600; color:var(--blue); }
-  .col-team { white-space:nowrap; }
-  .col-product { font-weight:500; max-width:220px; }
-  .col-note { color:var(--muted); font-size:12px; max-width:260px; }
-  .col-ts { color:var(--muted); font-size:11px; white-space:nowrap; font-family:'DM Mono',monospace; }
+  .col-product  { font-weight:500; max-width:200px; }
+  .col-note     { color:var(--muted); font-size:12px; max-width:200px; }
+  .col-ts       { color:var(--muted); font-size:11px; white-space:nowrap; font-family:'DM Mono',monospace; }
 
   .tag { display:inline-block; font-size:11px; font-weight:600; padding:2px 8px; border-radius:4px; white-space:nowrap; }
-  .tag-신제품 { background:#dbeafe; color:#1d4ed8; }
-  .tag-리뉴얼 { background:#f3e8ff; color:#7e22ce; }
+  .tag-신제품  { background:#dbeafe; color:#1d4ed8; }
+  .tag-리뉴얼  { background:#f3e8ff; color:#7e22ce; }
   .tag-프로모션 { background:#dcfce7; color:#15803d; }
-  .tag-박람회 { background:#fff7ed; color:#c2410c; }
+  .tag-박람회  { background:#fff7ed; color:#c2410c; }
+  .tag-기타    { background:#f3f4f6; color:#4b5563; }
 
-  .del-btn {
-    background:none; border:1px solid #fca5a5; color:var(--danger);
-    cursor:pointer; border-radius:5px; padding:3px 8px; font-size:11px;
-    font-family:'Noto Sans KR',sans-serif; transition:all 0.15s;
-  }
-  .del-btn:hover { background:#fee2e2; }
-
-  /* BTNS */
-  .btn {
-    padding:9px 18px; border-radius:8px; font-family:'Noto Sans KR',sans-serif;
-    font-size:13px; font-weight:600; cursor:pointer; transition:all 0.18s;
-    border:none; display:inline-flex; align-items:center; gap:6px; text-decoration:none;
-  }
-  .btn-primary { background:var(--blue); color:white; box-shadow:0 2px 8px rgba(26,91,183,0.2); }
-  .btn-primary:hover { background:#1550a0; transform:translateY(-1px); }
-  .btn-outline { background:white; color:var(--blue); border:1.5px solid var(--border); }
-  .btn-outline:hover { border-color:var(--sky); background:var(--accent); }
-  .btn-danger { background:white; color:var(--danger); border:1.5px solid #fca5a5; }
-  .btn-danger:hover { background:#fee2e2; }
-
+  .approved-row { background:#f0fdf4 !important; }
+  .approved-mark { color:var(--success); font-weight:700; font-size:14px; margin-right:3px; }
+  .history-badge { display:inline-flex; align-items:center; gap:4px; background:#fef9c3; color:#92400e;
+    border:1px solid #fde68a; border-radius:12px; padding:2px 8px; font-size:11px; font-weight:600;
+    cursor:pointer; transition:all 0.15s; }
+  .history-badge:hover { background:#fde68a; }
   .empty-row td { text-align:center; padding:48px; color:var(--muted); font-size:14px; }
 
+  /* HISTORY MODAL */
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); display:flex;
+    align-items:center; justify-content:center; z-index:200; }
+  .modal-overlay.hidden { display:none; }
+  .modal-box { background:white; border-radius:16px; padding:28px; width:520px; max-width:92vw;
+    max-height:80vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,0.2); }
+  .modal-title { font-size:16px; font-weight:700; color:var(--navy); margin-bottom:16px; }
+  .hist-item { border:1px solid var(--border); border-radius:10px; padding:14px 16px; margin-bottom:10px; }
+  .hist-time { font-size:11px; color:var(--muted); font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .hist-change { display:flex; gap:8px; align-items:flex-start; font-size:12px; margin-bottom:4px; }
+  .hist-field { font-weight:700; color:var(--navy); min-width:50px; }
+  .hist-arrow { color:var(--muted); }
+  .hist-old { color:var(--danger); text-decoration:line-through; }
+  .hist-new { color:var(--success); font-weight:600; }
+  .modal-btns { display:flex; justify-content:flex-end; margin-top:16px; }
+
   /* TOAST */
-  #toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(20px); padding:12px 28px; border-radius:10px; font-size:14px; font-weight:600; color:white; opacity:0; transition:all 0.3s; z-index:999; pointer-events:none; }
+  #toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(20px);
+    padding:12px 28px; border-radius:10px; font-size:14px; font-weight:600; color:white;
+    opacity:0; transition:all 0.3s; z-index:999; pointer-events:none; }
   #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
   #toast.success { background:var(--success); }
-  #toast.error { background:var(--danger); }
+  #toast.error   { background:var(--danger); }
 
   @media(max-width:768px) {
-    .stats { grid-template-columns: repeat(2,1fr); }
-    thead th:nth-child(n+6) { display:none; }
-    tbody td:nth-child(n+6) { display:none; }
+    main { padding:16px 12px 60px; }
+    .toolbar { flex-direction:column; align-items:flex-start; }
+    .stats { grid-template-columns:repeat(2,1fr); }
+    header { padding:0 16px; }
   }
 </style>
 </head>
@@ -134,114 +165,196 @@
 
 <header>
   <div class="logo">
-    <div class="logo-icon">📋</div>
+    <img src="/static/favicon.ico" alt="빙그레">
     프로모션 일정 취합 — 관리자
   </div>
   <nav class="header-nav">
-    <a href="/">← 제출 페이지</a>
-    <a href="/export" id="exportBtn">⬇ 엑셀 다운로드</a>
+    <a href="/">← 메인 페이지</a>
   </nav>
 </header>
 
 <main>
-  <div class="toolbar">
-    <div class="toolbar-title">전체 제출 현황</div>
-    <div class="toolbar-right">
-      <button class="btn btn-outline" onclick="location.reload()">↻ 새로고침</button>
-      <a href="/export" class="btn btn-primary">⬇ 엑셀 다운로드</a>
-    </div>
+
+  <!-- ── 로그인 섹션 ── -->
+  <div class="login-wrap" id="loginSection">
+    <h2>🔒 관리자 로그인</h2>
+    <p>관리자 비밀번호를 입력하세요.</p>
+    <input class="login-input" type="password" id="adminPw" placeholder="비밀번호"
+           onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doLogin()">로그인</button>
   </div>
 
-  <!-- STATS -->
-  <div class="stats" id="statsArea"></div>
+  <!-- ── 대시보드 (로그인 후 표시) ── -->
+  <div id="dashboard" style="display:none">
 
-  <!-- FILTERS -->
-  <div class="filters">
-    <div class="filter-group">
-      <label>담당팀</label>
-      <select id="filterTeam" onchange="applyFilter()">
-        <option value="">전체</option>
-        {% for t in teams %}
-        <option value="{{ t }}">{{ t }}</option>
-        {% endfor %}
-      </select>
+    <div class="toolbar">
+      <div class="toolbar-title">관리자 대시보드</div>
+      <div class="toolbar-right">
+        <button class="btn btn-outline" onclick="loadData()">↻ 새로고침</button>
+        <a id="exportBtn" href="/export?section=promo" class="btn btn-primary">⬇ 엑셀 다운로드</a>
+      </div>
     </div>
-    <div class="filter-group">
-      <label>구분</label>
-      <select id="filterCat" onchange="applyFilter()">
-        <option value="">전체</option>
-        {% for c in categories %}
-        <option value="{{ c }}">{{ c }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="filter-group">
-      <label>검색</label>
-      <input type="text" id="filterSearch" placeholder="제품명 검색..." oninput="applyFilter()">
-    </div>
-    <button class="btn btn-outline" onclick="resetFilters()">초기화</button>
-  </div>
 
-  <!-- TABLE -->
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th class="col-no">#</th>
-          <th>일정</th>
-          <th>담당팀</th>
-          <th>담당자</th>
-          <th>구분</th>
-          <th>제품명 / 행사명</th>
-          <th>비고</th>
-          <th>제출시각</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody id="tableBody"></tbody>
-    </table>
-  </div>
+    <!-- 섹션 탭 -->
+    <div class="section-tabs">
+      <button class="section-tab active" id="tab-promo"   onclick="switchSection('promo')">📋 프로모션 일정</button>
+      <button class="section-tab"        id="tab-tasting" onclick="switchSection('tasting')">🧪 신제품 체험단</button>
+    </div>
+
+    <!-- 통계 -->
+    <div class="stats" id="statsArea"></div>
+
+    <!-- 필터 -->
+    <div class="filters">
+      <div class="filter-group">
+        <label>담당팀</label>
+        <select id="filterTeam" onchange="applyFilter()">
+          <option value="">전체</option>
+          {% for t in teams %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>승인 상태</label>
+        <select id="filterApproved" onchange="applyFilter()">
+          <option value="">전체</option>
+          <option value="approved">승인됨</option>
+          <option value="pending">미승인</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>수정 여부</label>
+        <select id="filterEdited" onchange="applyFilter()">
+          <option value="">전체</option>
+          <option value="edited">수정됨</option>
+          <option value="original">미수정</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>검색</label>
+        <input type="text" id="filterSearch" placeholder="제품명 검색..." oninput="applyFilter()">
+      </div>
+      <button class="btn btn-outline" onclick="resetFilters()">초기화</button>
+    </div>
+
+    <!-- 테이블 -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="col-no">#</th>
+            <th>일정</th>
+            <th>담당팀</th>
+            <th>담당자</th>
+            <th>구분</th>
+            <th>제품명 / 행사명</th>
+            <th>비고</th>
+            <th>제출시각</th>
+            <th>수정이력</th>
+            <th>승인</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+
+  </div><!-- /dashboard -->
 </main>
 
 <div id="toast"></div>
 
-<script>
-let allData = [];
+<!-- 히스토리 모달 -->
+<div class="modal-overlay hidden" id="histModal" onclick="if(event.target===this)closeHist()">
+  <div class="modal-box">
+    <div class="modal-title">📋 수정 히스토리</div>
+    <div id="histContent"></div>
+    <div class="modal-btns">
+      <button class="btn btn-outline" onclick="closeHist()">닫기</button>
+    </div>
+  </div>
+</div>
 
+<script>
+const FIELD_LABELS = {
+  team:'담당팀', name:'담당자', schedule:'일정',
+  category:'구분', product:'제품명', note:'비고'
+};
+
+let allData     = [];
+let curSection  = 'promo';
+
+// ── 인증 ──────────────────────────────────────────────────
+async function doLogin() {
+  const pw  = document.getElementById('adminPw').value;
+  const res = await fetch('/api/auth', {
+    method: 'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({password: pw})
+  });
+  if (res.ok) {
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('dashboard').style.display    = 'block';
+    loadData();
+  } else {
+    showToast('비밀번호가 올바르지 않습니다.', 'error');
+    document.getElementById('adminPw').select();
+  }
+}
+
+// 이미 로그인된 경우 바로 대시보드 표시
+(async () => {
+  const r = await fetch('/api/check_admin');
+  const j = await r.json();
+  if (j.is_admin) {
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('dashboard').style.display    = 'block';
+    loadData();
+  }
+})();
+
+// ── 섹션 전환 ─────────────────────────────────────────────
+function switchSection(section) {
+  curSection = section;
+  document.getElementById('tab-promo').classList.toggle('active',   section === 'promo');
+  document.getElementById('tab-tasting').classList.toggle('active', section === 'tasting');
+  document.getElementById('exportBtn').href = `/export?section=${section}`;
+  resetFilters();
+  loadData();
+}
+
+// ── 데이터 로드 ───────────────────────────────────────────
 async function loadData() {
-  const res = await fetch('/api/data');
-  allData = await res.json();
+  const res = await fetch(`/api/data?section=${curSection}`);
+  allData   = await res.json();
   renderStats();
   applyFilter();
 }
 
 function renderStats() {
-  const total = allData.length;
-  const teams = new Set(allData.map(d=>d.team)).size;
-  const cats = {};
-  allData.forEach(d => { cats[d.category] = (cats[d.category]||0)+1; });
-
-  const statsArea = document.getElementById('statsArea');
-  statsArea.innerHTML = `
-    <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">총 항목 수</div></div>
-    <div class="stat-card"><div class="stat-num">${teams}</div><div class="stat-label">제출 팀 수</div></div>
-    <div class="stat-card"><div class="stat-num">${cats['신제품']||0}</div><div class="stat-label">신제품</div></div>
-    <div class="stat-card"><div class="stat-num">${cats['리뉴얼']||0}</div><div class="stat-label">리뉴얼</div></div>
-    <div class="stat-card"><div class="stat-num">${cats['프로모션']||0}</div><div class="stat-label">프로모션</div></div>
-    <div class="stat-card"><div class="stat-num">${cats['박람회']||0}</div><div class="stat-label">박람회</div></div>
+  const total    = allData.length;
+  const approved = allData.filter(d => d.approved).length;
+  const edited   = allData.filter(d => d.updated_at).length;
+  document.getElementById('statsArea').innerHTML = `
+    <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">총 항목</div></div>
+    <div class="stat-card"><div class="stat-num green">${approved}</div><div class="stat-label">승인됨</div></div>
+    <div class="stat-card"><div class="stat-num warn">${total - approved}</div><div class="stat-label">미승인</div></div>
+    <div class="stat-card"><div class="stat-num">${edited}</div><div class="stat-label">수정됨</div></div>
   `;
 }
 
+// ── 필터 ─────────────────────────────────────────────────
 function applyFilter() {
-  const team   = document.getElementById('filterTeam').value;
-  const cat    = document.getElementById('filterCat').value;
-  const search = document.getElementById('filterSearch').value.toLowerCase();
+  const team     = document.getElementById('filterTeam').value;
+  const approved = document.getElementById('filterApproved').value;
+  const edited   = document.getElementById('filterEdited').value;
+  const search   = document.getElementById('filterSearch').value.toLowerCase();
 
-  let filtered = allData.filter(d => {
-    if (team   && d.team     !== team) return false;
-    if (cat    && d.category !== cat)  return false;
+  const filtered = allData.filter(d => {
+    if (team   && d.team !== team) return false;
+    if (approved === 'approved' && !d.approved) return false;
+    if (approved === 'pending'  &&  d.approved) return false;
+    if (edited   === 'edited'   && !d.updated_at) return false;
+    if (edited   === 'original' &&  d.updated_at) return false;
     if (search && !d.product.toLowerCase().includes(search) &&
-        !d.note.toLowerCase().includes(search)) return false;
+        !(d.note||'').toLowerCase().includes(search)) return false;
     return true;
   });
 
@@ -249,55 +362,109 @@ function applyFilter() {
 }
 
 function resetFilters() {
-  document.getElementById('filterTeam').value = '';
-  document.getElementById('filterCat').value = '';
-  document.getElementById('filterSearch').value = '';
+  ['filterTeam','filterApproved','filterEdited','filterSearch'].forEach(id => {
+    const el = document.getElementById(id);
+    el.value = '';
+  });
   applyFilter();
+}
+
+// ── 테이블 렌더링 ─────────────────────────────────────────
+function fmtSchedule(s) {
+  if (/^\d{4}-\d{2}$/.test(s)) {
+    const [y, m] = s.split('-');
+    return `${y}년 ${parseInt(m)}월 (미정)`;
+  }
+  return s || '';
 }
 
 function renderTable(data) {
   const tbody = document.getElementById('tableBody');
-  if (data.length === 0) {
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="9">📭 해당하는 항목이 없습니다.</td></tr>`;
+  if (!data.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="10">📭 해당하는 항목이 없습니다.</td></tr>`;
     return;
   }
-  tbody.innerHTML = data.map((d, i) => `
-    <tr>
-      <td class="col-no">${i+1}</td>
-      <td class="col-schedule">${esc(d.schedule)}</td>
-      <td class="col-team">${esc(d.team)}</td>
-      <td>${esc(d.name)}</td>
-      <td><span class="tag tag-${d.category}">${esc(d.category)}</span></td>
-      <td class="col-product">${esc(d.product)}</td>
-      <td class="col-note">${esc(d.note||'')}</td>
-      <td class="col-ts">${esc(d.submitted_at||'')}</td>
-      <td><button class="del-btn" onclick="deleteEntry('${d.id}')">삭제</button></td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = data.map((d, i) => {
+    const history  = parseHistory(d.update_history);
+    const histBadge = history.length
+      ? `<button class="history-badge" onclick="showHist('${d.id}')">✎ ${history.length}회</button>`
+      : '<span style="color:var(--muted);font-size:12px">—</span>';
+    const appBtn = d.approved
+      ? `<button class="btn btn-sm btn-warn" onclick="toggleApprove('${d.id}',false)">승인취소</button>`
+      : `<button class="btn btn-sm btn-success" onclick="toggleApprove('${d.id}',true)">승인</button>`;
+    return `
+      <tr class="${d.approved ? 'approved-row' : ''}">
+        <td class="col-no">${i+1}</td>
+        <td class="col-schedule">${esc(fmtSchedule(d.schedule))}</td>
+        <td>${esc(d.team)}</td>
+        <td>${esc(d.name)}</td>
+        <td><span class="tag tag-${d.category}">${esc(d.category)}</span></td>
+        <td class="col-product">${d.approved ? '<span class="approved-mark">✓</span>' : ''}${esc(d.product)}</td>
+        <td class="col-note">${esc(d.note||'')}</td>
+        <td class="col-ts">${esc(d.submitted_at||'')}</td>
+        <td>${histBadge}</td>
+        <td>${appBtn}</td>
+      </tr>`;
+  }).join('');
 }
 
-function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-async function deleteEntry(id) {
-  if (!confirm('이 항목을 삭제하시겠습니까?')) return;
-  const res = await fetch(`/api/delete/${id}`, { method:'DELETE' });
+// ── 승인 토글 ─────────────────────────────────────────────
+async function toggleApprove(id, approve) {
+  const res  = await fetch(`/api/approve/${id}`, {
+    method: 'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({action: approve ? 'approve' : 'unapprove'})
+  });
   const data = await res.json();
-  if (data.success) {
-    showToast('삭제되었습니다.', 'success');
-    loadData();
-  }
+  if (data.success) { showToast(approve ? '승인 완료!' : '승인 취소됨', 'success'); loadData(); }
+  else showToast(data.message || '오류 발생', 'error');
 }
 
+// ── 히스토리 모달 ─────────────────────────────────────────
+function parseHistory(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  try { return JSON.parse(raw); } catch { return []; }
+}
+
+function showHist(id) {
+  const d = allData.find(x => x.id === id);
+  if (!d) return;
+  const history = parseHistory(d.update_history);
+  if (!history.length) return;
+
+  const html = history.map((h, i) => {
+    const changeRows = Object.entries(h.changes || {}).map(([f, v]) => `
+      <div class="hist-change">
+        <span class="hist-field">${FIELD_LABELS[f] || f}</span>
+        <span class="hist-arrow">→</span>
+        <span class="hist-old">${esc(String(v.old||''))}</span>
+        <span class="hist-arrow">▶</span>
+        <span class="hist-new">${esc(String(v.new||''))}</span>
+      </div>`).join('');
+    return `
+      <div class="hist-item">
+        <div class="hist-time">수정 ${i+1}회 · ${esc(h.changed_at||'')}</div>
+        ${changeRows}
+      </div>`;
+  }).join('');
+
+  document.getElementById('histContent').innerHTML = html;
+  document.getElementById('histModal').classList.remove('hidden');
+}
+
+function closeHist() {
+  document.getElementById('histModal').classList.add('hidden');
+}
+
+// ── 유틸 ──────────────────────────────────────────────────
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 function showToast(msg, type='success') {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = `show ${type}`;
-  setTimeout(() => { t.className = ''; }, 2800);
+  t.textContent = msg; t.className = `show ${type}`;
+  setTimeout(() => { t.className=''; }, 2800);
 }
-
-loadData();
 </script>
 </body>
 </html>

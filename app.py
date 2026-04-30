@@ -22,6 +22,8 @@ CATEGORIES         = ["신제품", "리뉴얼", "프로모션", "박람회"]
 TASTING_CATEGORIES = ["신제품", "리뉴얼", "기타"]
 TASTING_TEAMS      = [t for t in TEAMS if t not in ("해외", "콘텐츠전략팀")]
 
+EDITABLE_FIELDS = ["team", "name", "schedule", "category", "product", "note"]
+
 # ── DB 연결 (PostgreSQL) ──────────────────────────────────
 if USE_DB:
     import psycopg2
@@ -48,18 +50,26 @@ if USE_DB:
         with db() as cur:
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS entries (
-                    id           TEXT PRIMARY KEY,
-                    team         TEXT NOT NULL,
-                    name         TEXT NOT NULL,
-                    schedule     TEXT NOT NULL,
-                    category     TEXT NOT NULL,
-                    product      TEXT NOT NULL,
-                    note         TEXT DEFAULT '',
-                    submitted_at TEXT NOT NULL,
-                    section      TEXT DEFAULT 'promo'
+                    id             TEXT PRIMARY KEY,
+                    team           TEXT NOT NULL,
+                    name           TEXT NOT NULL,
+                    schedule       TEXT NOT NULL,
+                    category       TEXT NOT NULL,
+                    product        TEXT NOT NULL,
+                    note           TEXT DEFAULT '',
+                    submitted_at   TEXT NOT NULL,
+                    section        TEXT DEFAULT 'promo',
+                    approved       BOOLEAN DEFAULT FALSE,
+                    approved_at    TEXT DEFAULT NULL,
+                    updated_at     TEXT DEFAULT NULL,
+                    update_history TEXT DEFAULT '[]'
                 )
             """)
             cur.execute("ALTER TABLE entries ADD COLUMN IF NOT EXISTS section TEXT DEFAULT 'promo'")
+            cur.execute("ALTER TABLE entries ADD COLUMN IF NOT EXISTS approved BOOLEAN DEFAULT FALSE")
+            cur.execute("ALTER TABLE entries ADD COLUMN IF NOT EXISTS approved_at TEXT DEFAULT NULL")
+            cur.execute("ALTER TABLE entries ADD COLUMN IF NOT EXISTS updated_at TEXT DEFAULT NULL")
+            cur.execute("ALTER TABLE entries ADD COLUMN IF NOT EXISTS update_history TEXT DEFAULT '[]'")
         print("[DB] table ready")
 
 # ── 데이터 접근 ───────────────────────────────────────────
@@ -96,7 +106,10 @@ def index():
 
 @app.route("/admin")
 def admin():
-    return redirect(url_for("index"))
+    return render_template("admin.html",
+        teams=TEAMS,
+        categories=CATEGORIES,
+        tasting_categories=TASTING_CATEGORIES)
 
 @app.route("/api/auth", methods=["POST"])
 def auth():
@@ -105,6 +118,10 @@ def auth():
         session["admin"] = True
         return jsonify({"ok": True})
     return jsonify({"ok": False}), 401
+
+@app.route("/api/check_admin")
+def check_admin():
+    return jsonify({"is_admin": bool(session.get("admin"))})
 
 @app.route("/api/submit", methods=["POST"])
 def submit():
@@ -141,13 +158,85 @@ def get_data():
 
 @app.route("/api/delete/<entry_id>", methods=["DELETE"])
 def delete_entry(entry_id):
-    if not session.get("admin"):
-        return jsonify({"success": False, "message": "권한이 없습니다."}), 403
     if USE_DB:
         with db() as cur:
             cur.execute("DELETE FROM entries WHERE id = %s", (entry_id,))
     else:
         save_data([d for d in load_data() if d.get("id") != entry_id])
+    return jsonify({"success": True})
+
+@app.route("/api/update/<entry_id>", methods=["PUT"])
+def update_entry(entry_id):
+    body = request.json
+    now  = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    if USE_DB:
+        with db() as cur:
+            cur.execute("SELECT * FROM entries WHERE id = %s", (entry_id,))
+            row = cur.fetchone()
+            if not row:
+                return jsonify({"success": False, "message": "항목을 찾을 수 없습니다."}), 404
+            old = dict(row)
+
+            changes = {f: {"old": str(old.get(f) or ""), "new": str(body[f])}
+                       for f in EDITABLE_FIELDS if f in body and str(body[f]) != str(old.get(f) or "")}
+            if not changes:
+                return jsonify({"success": True, "message": "변경 사항이 없습니다."})
+
+            history = json.loads(old.get("update_history") or "[]")
+            history.append({"changed_at": now, "changes": changes})
+
+            set_parts = [f"{f} = %s" for f in EDITABLE_FIELDS if f in body]
+            params    = [body[f] for f in EDITABLE_FIELDS if f in body]
+            set_parts += ["updated_at = %s", "update_history = %s"]
+            params    += [now, json.dumps(history, ensure_ascii=False)]
+            params.append(entry_id)
+
+            cur.execute(f"UPDATE entries SET {', '.join(set_parts)} WHERE id = %s", params)
+    else:
+        data = load_data()
+        for entry in data:
+            if entry.get("id") == entry_id:
+                old = dict(entry)
+                changes = {f: {"old": str(old.get(f) or ""), "new": str(body[f])}
+                           for f in EDITABLE_FIELDS if f in body and str(body[f]) != str(old.get(f) or "")}
+                if changes:
+                    history = entry.get("update_history", [])
+                    if isinstance(history, str):
+                        history = json.loads(history)
+                    history.append({"changed_at": now, "changes": changes})
+                    for f in EDITABLE_FIELDS:
+                        if f in body:
+                            entry[f] = body[f]
+                    entry["updated_at"]     = now
+                    entry["update_history"] = history
+                break
+        save_data(data)
+
+    return jsonify({"success": True, "message": "수정 완료!"})
+
+@app.route("/api/approve/<entry_id>", methods=["POST"])
+def approve_entry(entry_id):
+    if not session.get("admin"):
+        return jsonify({"success": False, "message": "권한이 없습니다."}), 403
+    action = request.json.get("action", "approve")
+    now    = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    if USE_DB:
+        with db() as cur:
+            if action == "approve":
+                cur.execute("UPDATE entries SET approved = TRUE, approved_at = %s WHERE id = %s", (now, entry_id))
+            else:
+                cur.execute("UPDATE entries SET approved = FALSE, approved_at = NULL WHERE id = %s", (entry_id,))
+    else:
+        data = load_data()
+        for entry in data:
+            if entry.get("id") == entry_id:
+                entry["approved"]    = (action == "approve")
+                entry["approved_at"] = now if action == "approve" else None
+                break
+        save_data(data)
+
     return jsonify({"success": True})
 
 @app.route("/api/clear_team", methods=["POST"])
