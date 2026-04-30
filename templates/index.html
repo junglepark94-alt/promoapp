@@ -147,6 +147,7 @@
     font-family:'Noto Sans KR',sans-serif; font-size:13.5px; color:var(--text);
     background:var(--white); transition:border-color 0.2s,box-shadow 0.2s; outline:none; -webkit-appearance:none;
   }
+  .field input[type="date"] { padding:12px 14px; min-height:46px; cursor:pointer; font-size:14px; }
   .field select:focus, .field input:focus, .field textarea:focus { border-color:var(--sky); box-shadow:0 0 0 3px rgba(59,158,221,0.12); }
   .field select { cursor:pointer; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b87a8' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:32px; }
   .field textarea { resize:vertical; min-height:72px; line-height:1.6; }
@@ -481,7 +482,7 @@
             </div>
             <div class="field-row">
               <div class="field">
-                <label>일정 <span class="req">*</span></label>
+                <label>진행 희망 일정 <span class="req">*</span></label>
                 <input type="date" id="tasting-schedule">
               </div>
               <div class="field">
@@ -495,6 +496,10 @@
             <div class="field" style="margin-bottom:14px">
               <label>제품명 <span class="req">*</span></label>
               <input type="text" id="tasting-product" placeholder="예) 빵또아 블루베리 크림치즈">
+            </div>
+            <div class="field" style="margin-bottom:14px">
+              <label>지원가능수량</label>
+              <input type="number" id="tasting-quantity" placeholder="예) 50" min="0" style="max-width:200px">
             </div>
             <div class="field">
               <label>비고 (선택)</label>
@@ -824,6 +829,8 @@ function addEntry(section) {
   const category = g(section + '-category');
   const product  = g(section + '-product');
   const note     = g(section + '-note');
+  const qtyEl    = document.getElementById(section + '-quantity');
+  const quantity = qtyEl ? qtyEl.value.trim() : '';
 
   if (!team)     return showToast('담당팀을 선택해주세요.', 'error');
   if (!name)     return showToast('담당자 이름을 입력해주세요.', 'error');
@@ -831,10 +838,11 @@ function addEntry(section) {
   if (!category) return showToast('구분을 선택해주세요.', 'error');
   if (!product)  return showToast('제품명을 입력해주세요.', 'error');
 
-  state[section].entries.push({ team, name, schedule, category, product, note });
+  state[section].entries.push({ team, name, schedule, category, product, note, quantity });
   renderEntries(section);
   document.getElementById(section + '-product').value = '';
   document.getElementById(section + '-note').value    = '';
+  if (qtyEl) qtyEl.value = '';
   document.getElementById(section + '-product').focus();
   showToast('항목이 추가되었습니다!', 'success');
 }
@@ -863,6 +871,7 @@ function renderEntries(section) {
           <span class="tag tag-cat">${e.category}</span>
         </div>
         <div class="entry-product">${esc(e.product)}</div>
+        ${e.quantity ? `<div class="entry-note">지원가능수량: ${esc(e.quantity)}개</div>` : ''}
         ${e.note ? `<div class="entry-note">${esc(e.note)}</div>` : ''}
       </div>
       <button class="entry-del" onclick="removeEntry('${section}',${i})">✕ 삭제</button>
@@ -876,10 +885,17 @@ async function submitAll(section) {
   const btn = document.getElementById(section + '-submitBtn');
   btn.disabled = true; btn.textContent = '제출 중...';
   try {
+    const payload = entries.map(e => {
+      const note = e.quantity
+        ? (e.note ? `지원가능수량: ${e.quantity}개 / ${e.note}` : `지원가능수량: ${e.quantity}개`)
+        : e.note;
+      const { quantity, ...rest } = e;
+      return { ...rest, note };
+    });
     const res  = await fetch('/api/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ entries, section })
+      body: JSON.stringify({ entries: payload, section })
     });
     const data = await res.json();
     if (data.success) {

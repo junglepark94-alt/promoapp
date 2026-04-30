@@ -11,7 +11,7 @@ app.secret_key = os.getenv("SECRET_KEY", "promo-app-s3cr3t-key-2025")
 DATA_FILE      = "data.json"
 DATABASE_URL   = os.getenv("DATABASE_URL", "")
 USE_DB         = bool(DATABASE_URL)
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "박종걸1!")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "1029")
 
 TEAMS = [
     "냉동BM1팀", "냉동BM2팀", "발효유팀", "Dairy제품팀",
