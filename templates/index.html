@@ -176,6 +176,12 @@
   .field select { cursor:pointer; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b87a8' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:32px; }
   .field textarea { resize:vertical; min-height:72px; line-height:1.6; }
   .req { color:var(--danger); font-size:10px; margin-left:2px; }
+  .file-input-wrap { position:relative; }
+  .file-input-wrap input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+  .file-input-btn { display:flex; align-items:center; gap:8px; padding:10px 14px; border:1.5px dashed var(--border); border-radius:8px; background:var(--accent); font-size:13px; color:var(--muted); transition:all 0.2s; user-select:none; }
+  .file-input-btn:hover { border-color:var(--sky); color:var(--text); }
+  .file-input-btn.has-file { border-style:solid; border-color:var(--success); background:#f0fdf4; color:#15803d; }
+  .file-hint { font-size:11px; color:var(--muted); }
   .form-divider { border:none; border-top:1.5px dashed var(--border); margin:22px 0; }
   .partial-toggle { display:flex; align-items:center; gap:6px; margin-top:8px; font-size:12px; color:var(--muted); cursor:pointer; user-select:none; }
   .partial-toggle input[type="checkbox"] { width:14px; height:14px; cursor:pointer; accent-color:var(--blue); flex-shrink:0; }
@@ -572,6 +578,16 @@
               <label>비고 (선택)</label>
               <textarea id="promo-note" placeholder="세부 내용, 날짜 확정 여부, 판촉물 등 추가 정보"></textarea>
             </div>
+            <div class="field">
+              <label>첨부파일 (선택)</label>
+              <div class="file-input-wrap">
+                <div class="file-input-btn" id="promo-file-btn">
+                  <span>📎</span><span id="promo-file-name">파일을 선택하세요</span>
+                </div>
+                <input type="file" id="promo-file" accept="image/*,.pdf,.xlsx,.xls,.doc,.docx,.ppt,.pptx" onchange="onFileChange('promo')">
+              </div>
+              <div class="file-hint">이미지, PDF, 문서 파일 · 최대 10MB</div>
+            </div>
             <div class="btn-row">
               <button class="btn btn-outline" onclick="addEntry('promo')">＋ 항목 추가</button>
             </div>
@@ -801,6 +817,16 @@
             <div class="field">
               <label>비고 (선택)</label>
               <textarea id="tasting-note" placeholder="체험단 규모, 플랫폼, 일정 확정 여부 등"></textarea>
+            </div>
+            <div class="field">
+              <label>첨부파일 (선택)</label>
+              <div class="file-input-wrap">
+                <div class="file-input-btn" id="tasting-file-btn">
+                  <span>📎</span><span id="tasting-file-name">파일을 선택하세요</span>
+                </div>
+                <input type="file" id="tasting-file" accept="image/*,.pdf,.xlsx,.xls,.doc,.docx,.ppt,.pptx" onchange="onFileChange('tasting')">
+              </div>
+              <div class="file-hint">이미지, PDF, 문서 파일 · 최대 10MB</div>
             </div>
             <div class="btn-row">
               <button class="btn btn-outline" onclick="addEntry('tasting')">＋ 항목 추가</button>
@@ -1243,8 +1269,8 @@ function renderTeamTable(section) {
       <td class="col-schedule">${esc(fmtSchedule(d.schedule))}</td>
       <td>${esc(d.name)}</td>
       <td><span class="tag tag-${d.category}">${esc(d.category)}</span></td>
-      <td class="col-product">${esc(d.product)}</td>
-      <td class="col-note col-hide-mob">${esc(d.note||'')}</td>
+      <td class="col-product">${esc(d.product)}${d.attachment_name ? `<a href="/api/file/${d.id}" target="_blank" title="${esc(d.attachment_name)}" style="margin-left:5px;color:var(--muted)">📎</a>` : ''}</td>
+      <td class="col-note col-hide-mob">${esc(d.note||'')}${d.attachment_name ? `<br><a href="/api/file/${d.id}" target="_blank" style="font-size:11px;color:var(--blue)">📎 ${esc(d.attachment_name)}</a>` : ''}</td>
       <td class="col-ts col-hide-mob">${esc(d.submitted_at||'')}</td>
       <td class="col-hide-mob" style="text-align:center">${d.approved ? '<span class="approved-mark" title="승인됨">✓ 승인</span>' : '<span style="color:var(--muted);font-size:12px">—</span>'}</td>
       <td style="white-space:nowrap">
@@ -1316,8 +1342,8 @@ function applyFilter(section) {
       <td class="col-team">${esc(d.team)}</td>
       <td class="col-hide-mob">${esc(d.name)}</td>
       <td><span class="tag tag-${d.category}">${esc(d.category)}</span></td>
-      <td class="col-product">${esc(d.product)}</td>
-      <td class="col-note col-hide-mob">${esc(d.note||'')}</td>
+      <td class="col-product">${esc(d.product)}${d.attachment_name ? `<a href="/api/file/${d.id}" target="_blank" title="${esc(d.attachment_name)}" style="margin-left:5px;color:var(--muted)">📎</a>` : ''}</td>
+      <td class="col-note col-hide-mob">${esc(d.note||'')}${d.attachment_name ? `<br><a href="/api/file/${d.id}" target="_blank" style="font-size:11px;color:var(--blue)">📎 ${esc(d.attachment_name)}</a>` : ''}</td>
       <td class="col-ts col-hide-mob">${esc(d.submitted_at||'')}</td>
       <td class="col-hide-mob" style="text-align:center">${d.approved ? '<span class="approved-mark" title="승인됨">✓ 승인</span>' : '<span style="color:var(--muted);font-size:12px">—</span>'}</td>
       <td style="white-space:nowrap">
@@ -1470,6 +1496,27 @@ async function submitEdit() {
 // ── 폼 기능 ───────────────────────────────────────────────
 function g(id) { return document.getElementById(id).value.trim(); }
 
+function onFileChange(section) {
+  const input = document.getElementById(section + '-file');
+  const btn   = document.getElementById(section + '-file-btn');
+  const label = document.getElementById(section + '-file-name');
+  if (input.files.length > 0) {
+    const file = input.files[0];
+    if (file.size > 10 * 1024 * 1024) {
+      showToast('파일 크기는 10MB 이하여야 합니다.', 'error');
+      input.value = '';
+      label.textContent = '파일을 선택하세요';
+      btn.classList.remove('has-file');
+      return;
+    }
+    label.textContent = file.name;
+    btn.classList.add('has-file');
+  } else {
+    label.textContent = '파일을 선택하세요';
+    btn.classList.remove('has-file');
+  }
+}
+
 function addEntry(section) {
   const team    = g(section + '-team');
   const name    = g(section + '-name');
@@ -1518,10 +1565,18 @@ function addEntry(section) {
   if (!category) return showToast('구분을 선택해주세요.', 'error');
   if (!product)  return showToast('제품명을 입력해주세요.', 'error');
 
-  state[section].entries.push({ team, name, schedule, category, product, note, quantity, unit, personnel });
+  const fileInput = document.getElementById(section + '-file');
+  const file = fileInput && fileInput.files.length > 0 ? fileInput.files[0] : null;
+
+  state[section].entries.push({ team, name, schedule, category, product, note, quantity, unit, personnel, file });
   renderEntries(section);
 
   // 입력 초기화
+  if (fileInput) {
+    fileInput.value = '';
+    document.getElementById(section + '-file-name').textContent = '파일을 선택하세요';
+    document.getElementById(section + '-file-btn').classList.remove('has-file');
+  }
   ['start','end'].forEach(w => {
     document.getElementById(`${section}-schedule-${w}`).value = '';
     document.getElementById(`${section}-schedule-${w}-partial`).checked = false;
@@ -1568,6 +1623,7 @@ function renderEntries(section) {
         ${e.quantity ? `<div class="entry-note">지원가능수량: ${esc(e.quantity)}${esc(e.unit||'개')}</div>` : ''}
         ${e.personnel ? `<div class="entry-note">희망 인원수: ${esc(e.personnel)}명</div>` : ''}
         ${e.note ? `<div class="entry-note">${esc(e.note)}</div>` : ''}
+        ${e.file ? `<div class="entry-note" style="color:#15803d">📎 ${esc(e.file.name)}</div>` : ''}
       </div>
       <button class="entry-del" onclick="removeEntry('${section}',${i})">✕ 삭제</button>
     </div>
@@ -1596,6 +1652,15 @@ async function submitAll(section) {
     });
     const data = await res.json();
     if (data.success) {
+      // 첨부파일 업로드
+      if (data.ids) {
+        const uploads = entries.map((e, i) => ({ file: e.file, id: data.ids[i] })).filter(x => x.file);
+        for (const { file, id } of uploads) {
+          const fd = new FormData();
+          fd.append('file', file);
+          await fetch(`/api/upload/${id}`, { method: 'POST', body: fd });
+        }
+      }
       state[section].entries = [];
       renderEntries(section);
       showToast(data.message, 'success');

@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for, session
-import json, os, io
+import json, os, io, base64
 from datetime import datetime
 from contextlib import contextmanager
 import openpyxl
@@ -7,6 +7,7 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "promo-app-s3cr3t-key-2025")
+app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10MB
 
 DATA_FILE      = "data.json"
 DATABASE_URL   = os.getenv("DATABASE_URL", "")
@@ -71,6 +72,8 @@ if USE_DB:
             cur.execute("ALTER TABLE entries ADD COLUMN IF NOT EXISTS approved_at TEXT DEFAULT NULL")
             cur.execute("ALTER TABLE entries ADD COLUMN IF NOT EXISTS updated_at TEXT DEFAULT NULL")
             cur.execute("ALTER TABLE entries ADD COLUMN IF NOT EXISTS update_history TEXT DEFAULT '[]'")
+            cur.execute("ALTER TABLE entries ADD COLUMN IF NOT EXISTS attachment_name TEXT DEFAULT NULL")
+            cur.execute("ALTER TABLE entries ADD COLUMN IF NOT EXISTS attachment_data BYTEA DEFAULT NULL")
         print("[DB] table ready")
 
 # ── 데이터 접근 ───────────────────────────────────────────
@@ -80,8 +83,10 @@ def load_data(team=None, section=None):
         if team:    conditions.append("team = %s");    params.append(team)
         if section: conditions.append("section = %s"); params.append(section)
         where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
+        _cols = ("id, team, name, schedule, category, product, note, submitted_at, section, "
+                 "approved, approved_at, updated_at, update_history, attachment_name")
         with db() as cur:
-            cur.execute(f"SELECT * FROM entries {where} ORDER BY submitted_at DESC", params)
+            cur.execute(f"SELECT {_cols} FROM entries {where} ORDER BY submitted_at DESC", params)
             return [dict(r) for r in cur.fetchall()]
     else:
         if os.path.exists(DATA_FILE):
@@ -89,7 +94,7 @@ def load_data(team=None, section=None):
                 data = json.load(f)
             if team:    data = [d for d in data if d.get("team") == team]
             if section: data = [d for d in data if d.get("section", "promo") == section]
-            return data
+            return [{k: v for k, v in d.items() if k != 'attachment_b64'} for d in data]
         return []
 
 def save_data(data):
@@ -168,11 +173,13 @@ def submit():
         return jsonify({"success": False, "message": "데이터가 없습니다."}), 400
 
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    ids = []
 
     if USE_DB:
         with db() as cur:
             for i, entry in enumerate(entries):
                 eid = f"{now}_{i}_{os.urandom(3).hex()}"
+                ids.append(eid)
                 cur.execute("""
                     INSERT INTO entries
                         (id, team, name, schedule, category, product, note, submitted_at, section)
@@ -182,15 +189,85 @@ def submit():
     else:
         data = load_data()
         for i, entry in enumerate(entries):
-            entry.update({"submitted_at": now, "id": f"{now}_{len(data)+i}", "section": section})
+            eid = f"{now}_{len(data)+i}"
+            ids.append(eid)
+            entry.update({"submitted_at": now, "id": eid, "section": section})
             data.append(entry)
         save_data(data)
 
-    return jsonify({"success": True, "message": f"{len(entries)}건 제출 완료!"})
+    return jsonify({"success": True, "ids": ids, "message": f"{len(entries)}건 제출 완료!"})
 
 @app.route("/api/data")
 def get_data():
     return jsonify(load_data(team=request.args.get("team"), section=request.args.get("section")))
+
+_ALLOWED_EXT = {'jpg','jpeg','png','gif','webp','pdf','xlsx','xls','doc','docx','ppt','pptx'}
+_MIME = {
+    'jpg':'image/jpeg','jpeg':'image/jpeg','png':'image/png','gif':'image/gif',
+    'webp':'image/webp','pdf':'application/pdf',
+    'xlsx':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'xls':'application/vnd.ms-excel','doc':'application/msword',
+    'docx':'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'ppt':'application/vnd.ms-powerpoint',
+    'pptx':'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+}
+
+@app.route("/api/upload/<entry_id>", methods=["POST"])
+def upload_file(entry_id):
+    if 'file' not in request.files:
+        return jsonify({"success": False, "message": "파일이 없습니다."}), 400
+    f = request.files['file']
+    if not f.filename:
+        return jsonify({"success": False, "message": "파일명이 없습니다."}), 400
+    ext = f.filename.rsplit('.', 1)[-1].lower() if '.' in f.filename else ''
+    if ext not in _ALLOWED_EXT:
+        return jsonify({"success": False, "message": "허용되지 않는 파일 형식입니다."}), 400
+    raw = f.read()
+    filename = f.filename
+    if USE_DB:
+        with db() as cur:
+            cur.execute("UPDATE entries SET attachment_name=%s, attachment_data=%s WHERE id=%s",
+                        (filename, psycopg2.Binary(raw), entry_id))
+    else:
+        all_data = load_data()
+        # load_data excludes attachment_b64, so read raw file again
+        if os.path.exists(DATA_FILE):
+            with open(DATA_FILE, "r", encoding="utf-8") as fh:
+                all_data = json.load(fh)
+        for entry in all_data:
+            if entry.get("id") == entry_id:
+                entry["attachment_name"] = filename
+                entry["attachment_b64"]  = base64.b64encode(raw).decode()
+                break
+        save_data(all_data)
+    return jsonify({"success": True})
+
+@app.route("/api/file/<entry_id>")
+def get_file(entry_id):
+    if USE_DB:
+        with db() as cur:
+            cur.execute("SELECT attachment_name, attachment_data FROM entries WHERE id=%s", (entry_id,))
+            row = cur.fetchone()
+        if not row or not row['attachment_data']:
+            return jsonify({"error": "파일 없음"}), 404
+        filename = row['attachment_name']
+        raw = bytes(row['attachment_data'])
+    else:
+        if os.path.exists(DATA_FILE):
+            with open(DATA_FILE, "r", encoding="utf-8") as fh:
+                all_data = json.load(fh)
+        else:
+            return jsonify({"error": "파일 없음"}), 404
+        entry = next((d for d in all_data if d.get("id") == entry_id), None)
+        if not entry or not entry.get("attachment_b64"):
+            return jsonify({"error": "파일 없음"}), 404
+        filename = entry["attachment_name"]
+        raw = base64.b64decode(entry["attachment_b64"])
+    ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else ''
+    mimetype = _MIME.get(ext, 'application/octet-stream')
+    inline = ext in ('jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf')
+    return send_file(io.BytesIO(raw), mimetype=mimetype,
+                     as_attachment=not inline, download_name=filename)
 
 @app.route("/api/delete/<entry_id>", methods=["DELETE"])
 def delete_entry(entry_id):
