@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>프로모션 일정 취합 시스템</title>
-<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+<link rel="icon" type="image/x-icon" href="/static/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -741,9 +741,8 @@ function renderDateTabs(section, ctx) {
   const yr    = state[section].year;
   const mo    = state[section].month;
 
-  const years = [...new Set(
-    data.map(d => { const ym = parseScheduleYM(d.schedule); return ym ? ym.year : null; }).filter(Boolean)
-  )].sort();
+  const dataYears = data.map(d => { const ym = parseScheduleYM(d.schedule); return ym ? ym.year : null; }).filter(Boolean);
+  const years = [...new Set(ctx === 'all' ? ['2026', ...dataYears] : dataYears)].sort();
 
   const yearEl  = document.getElementById(`${section}-${ctx}-yearTabs`);
   const monthEl = document.getElementById(`${section}-${ctx}-monthTabs`);
