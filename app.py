@@ -18,7 +18,7 @@ TEAMS = [
     "커피 음료팀", "NC팀", "해외", "콘텐츠전략팀"
 ]
 
-CATEGORIES         = ["신제품", "리뉴얼", "프로모션", "박람회"]
+CATEGORIES         = ["신제품", "리뉴얼", "프로모션", "박람회", "기타"]
 TASTING_CATEGORIES = ["신제품", "리뉴얼", "기타"]
 TASTING_TEAMS      = [t for t in TEAMS if t not in ("해외", "콘텐츠전략팀")]
 

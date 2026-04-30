@@ -218,7 +218,7 @@
   .modal-btns { display:flex; gap:10px; margin-top:16px; justify-content:flex-end; }
 
   /* ── TAGS ── */
-  .tag { display:inline-block; font-size:11px; font-weight:600; padding:2px 8px; border-radius:4px; white-space:nowrap; }
+  .tag { display:inline-block; font-size:11px; font-weight:600; padding:2px 8px; border-radius:4px; white-space:nowrap; background:#f3f4f6; color:#4b5563; }
   .tag-schedule  { background:#dbeafe; color:#1d4ed8; }
   .tag-cat       { background:#dcfce7; color:#15803d; }
   .tag-신제품    { background:#dbeafe; color:#1d4ed8; }
@@ -475,10 +475,11 @@
             <div class="field-row">
               <div class="field">
                 <label>구분 <span class="req">*</span></label>
-                <select id="promo-category">
+                <select id="promo-category" onchange="onCategoryChange('promo')">
                   <option value="">선택</option>
                   {% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
                 </select>
+                <input type="text" id="promo-category-custom" placeholder="직접 입력" style="display:none;margin-top:8px;width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:13.5px;outline:none;transition:border-color 0.2s">
               </div>
               <div class="field"></div>
             </div>
@@ -667,10 +668,11 @@
             <div class="field-row">
               <div class="field">
                 <label>구분 <span class="req">*</span></label>
-                <select id="tasting-category">
+                <select id="tasting-category" onchange="onCategoryChange('tasting')">
                   <option value="">선택</option>
                   {% for c in tasting_categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
                 </select>
+                <input type="text" id="tasting-category-custom" placeholder="직접 입력" style="display:none;margin-top:8px;width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:13.5px;outline:none;transition:border-color 0.2s">
               </div>
               <div class="field"></div>
             </div>
@@ -678,9 +680,24 @@
               <label>제품명 <span class="req">*</span></label>
               <input type="text" id="tasting-product" placeholder="예) 빵또아 블루베리 크림치즈">
             </div>
-            <div class="field" style="margin-bottom:14px">
-              <label>지원가능수량</label>
-              <input type="number" id="tasting-quantity" placeholder="예) 50" min="0" style="max-width:200px">
+            <div class="field-row" style="margin-bottom:14px">
+              <div class="field">
+                <label>지원가능수량</label>
+                <div style="display:flex;gap:8px">
+                  <input type="number" id="tasting-quantity" placeholder="예) 50" min="0" style="flex:1">
+                  <select id="tasting-quantity-unit" style="width:76px;padding:10px 8px;border:1.5px solid var(--border);border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:13px;color:var(--text);background:white;outline:none;cursor:pointer;-webkit-appearance:none;text-align:center">
+                    <option value="개">개</option>
+                    <option value="박스">박스</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field">
+                <label>희망 인원수</label>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <input type="number" id="tasting-personnel" placeholder="예) 10" min="0" style="flex:1">
+                  <span style="font-size:13px;color:var(--muted);white-space:nowrap">명</span>
+                </div>
+              </div>
             </div>
             <div class="field">
               <label>비고 (선택)</label>
@@ -857,10 +874,11 @@
     </div>
     <div class="field" style="margin-bottom:14px">
       <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px">구분</label>
-      <select id="edit-category">
+      <select id="edit-category" onchange="onEditCategoryChange()">
         {% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
         {% for c in tasting_categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
       </select>
+      <input type="text" id="edit-category-custom" placeholder="직접 입력" style="display:none;margin-top:8px;width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:13.5px;outline:none;transition:border-color 0.2s">
     </div>
     <div class="field" style="margin-bottom:14px">
       <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px">제품명 / 행사명</label>
@@ -879,6 +897,20 @@
 
 
 <script>
+// ── 구분 "기타" 직접입력 ───────────────────────────────────
+function onCategoryChange(section) {
+  const val      = document.getElementById(section + '-category').value;
+  const customEl = document.getElementById(section + '-category-custom');
+  customEl.style.display = val === '기타' ? '' : 'none';
+  if (val !== '기타') customEl.value = '';
+}
+function onEditCategoryChange() {
+  const val      = document.getElementById('edit-category').value;
+  const customEl = document.getElementById('edit-category-custom');
+  customEl.style.display = val === '기타' ? '' : 'none';
+  if (val !== '기타') customEl.value = '';
+}
+
 // ── 상태 ──────────────────────────────────────────────────
 const state = {
   promo:   { entries: [], allData: [], teamData: [], year: 'all', month: 'all' },
@@ -1170,7 +1202,16 @@ function openEditById(id, section) {
   const cats = section === 'tasting' ? CATS_TASTING : CATS_PROMO;
   const catSel = document.getElementById('edit-category');
   catSel.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
-  catSel.value = d.category || '';
+  const customCatEl = document.getElementById('edit-category-custom');
+  if (cats.includes(d.category)) {
+    catSel.value = d.category || '';
+    customCatEl.style.display = 'none';
+    customCatEl.value = '';
+  } else {
+    catSel.value = '기타';
+    customCatEl.style.display = '';
+    customCatEl.value = d.category || '';
+  }
 
   // 시작일 ~ 마감일 파싱
   const parts    = (d.schedule || '').split('~');
@@ -1214,11 +1255,16 @@ async function submitEdit() {
   }
   const schedule = endDate ? `${startDate}~${endDate}` : startDate;
 
+  let editCategory = document.getElementById('edit-category').value;
+  if (editCategory === '기타') {
+    const c = document.getElementById('edit-category-custom').value.trim();
+    if (c) editCategory = c;
+  }
   const body = {
     team:     document.getElementById('edit-team').value,
     name:     document.getElementById('edit-name').value,
     schedule,
-    category: document.getElementById('edit-category').value,
+    category: editCategory,
     product:  document.getElementById('edit-product').value,
     note:     document.getElementById('edit-note').value,
   };
@@ -1237,13 +1283,23 @@ async function submitEdit() {
 function g(id) { return document.getElementById(id).value.trim(); }
 
 function addEntry(section) {
-  const team     = g(section + '-team');
-  const name     = g(section + '-name');
-  const category = g(section + '-category');
-  const product  = g(section + '-product');
-  const note     = g(section + '-note');
-  const qtyEl    = document.getElementById(section + '-quantity');
-  const quantity = qtyEl ? qtyEl.value.trim() : '';
+  const team    = g(section + '-team');
+  const name    = g(section + '-name');
+  const product = g(section + '-product');
+  const note    = g(section + '-note');
+
+  let category = g(section + '-category');
+  if (category === '기타') {
+    const custom = g(section + '-category-custom');
+    if (custom) category = custom;
+  }
+
+  const qtyEl       = document.getElementById(section + '-quantity');
+  const unitEl      = document.getElementById(section + '-quantity-unit');
+  const personnelEl = document.getElementById(section + '-personnel');
+  const quantity    = qtyEl       ? qtyEl.value.trim()  : '';
+  const unit        = unitEl      ? unitEl.value         : '개';
+  const personnel   = personnelEl ? personnelEl.value.trim() : '';
 
   // 시작일
   const startPartial = document.getElementById(section + '-schedule-start-partial').checked;
@@ -1274,7 +1330,7 @@ function addEntry(section) {
   if (!category) return showToast('구분을 선택해주세요.', 'error');
   if (!product)  return showToast('제품명을 입력해주세요.', 'error');
 
-  state[section].entries.push({ team, name, schedule, category, product, note, quantity });
+  state[section].entries.push({ team, name, schedule, category, product, note, quantity, unit, personnel });
   renderEntries(section);
 
   // 입력 초기화
@@ -1288,6 +1344,11 @@ function addEntry(section) {
   document.getElementById(section + '-product').value = '';
   document.getElementById(section + '-note').value    = '';
   if (qtyEl) qtyEl.value = '';
+  if (unitEl) unitEl.value = '개';
+  if (personnelEl) personnelEl.value = '';
+  const catCustomEl = document.getElementById(section + '-category-custom');
+  if (catCustomEl) { catCustomEl.value = ''; catCustomEl.style.display = 'none'; }
+  document.getElementById(section + '-category').value = '';
   document.getElementById(section + '-product').focus();
   showToast('항목이 추가되었습니다!', 'success');
 }
@@ -1316,7 +1377,8 @@ function renderEntries(section) {
           <span class="tag tag-cat">${e.category}</span>
         </div>
         <div class="entry-product">${esc(e.product)}</div>
-        ${e.quantity ? `<div class="entry-note">지원가능수량: ${esc(e.quantity)}개</div>` : ''}
+        ${e.quantity ? `<div class="entry-note">지원가능수량: ${esc(e.quantity)}${esc(e.unit||'개')}</div>` : ''}
+        ${e.personnel ? `<div class="entry-note">희망 인원수: ${esc(e.personnel)}명</div>` : ''}
         ${e.note ? `<div class="entry-note">${esc(e.note)}</div>` : ''}
       </div>
       <button class="entry-del" onclick="removeEntry('${section}',${i})">✕ 삭제</button>
@@ -1331,10 +1393,12 @@ async function submitAll(section) {
   btn.disabled = true; btn.textContent = '제출 중...';
   try {
     const payload = entries.map(e => {
-      const note = e.quantity
-        ? (e.note ? `지원가능수량: ${e.quantity}개 / ${e.note}` : `지원가능수량: ${e.quantity}개`)
-        : e.note;
-      const { quantity, ...rest } = e;
+      const parts = [];
+      if (e.quantity)   parts.push(`지원가능수량: ${e.quantity}${e.unit||'개'}`);
+      if (e.personnel)  parts.push(`희망 인원수: ${e.personnel}명`);
+      if (e.note)       parts.push(e.note);
+      const note = parts.join(' / ');
+      const { quantity, unit, personnel, ...rest } = e;
       return { ...rest, note };
     });
     const res  = await fetch('/api/submit', {
