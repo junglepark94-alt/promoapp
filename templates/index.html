@@ -22,6 +22,7 @@
     --bg:      #fdf8f8;
     --white:   #ffffff;
     --card:    #ffffff;
+    --teal:    #0d9488;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -120,6 +121,8 @@
   .nav-item:hover { background:var(--accent); color:var(--text); }
   .nav-item.active.blue   { background:var(--navy);   color:white; }
   .nav-item.active.purple { background:var(--purple); color:white; }
+  .nav-item.active.teal   { background:var(--teal);   color:white; }
+  .nav-group-dot.teal     { background:var(--teal); }
   .nav-arrow { font-size:10px; transition:transform 0.2s; opacity:0.6; }
   .nav-item.open .nav-arrow { transform:rotate(180deg); }
 
@@ -438,6 +441,14 @@
     </div>
     <button class="nav-item purple" id="nav-tasting-all" onclick="showPanel('tasting-all')">
       전체 일정 확인
+    </button>
+
+    <div class="nav-divider"></div>
+    <div class="nav-group-label">
+      <span class="nav-group-dot teal"></span>콘텐츠 캘린더
+    </div>
+    <button class="nav-item teal" id="nav-content-cal" onclick="showPanel('content-cal')">
+      콘텐츠 캘린더
     </button>
 
   </div><!-- /sidebar-nav -->
@@ -887,6 +898,52 @@
       </div>
     </section>
 
+    <!-- ════════════════════════════════════════
+         콘텐츠 캘린더
+    ════════════════════════════════════════ -->
+    <section class="panel" id="panel-content-cal">
+      <div style="padding-bottom:60px">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title" style="color:var(--teal)">콘텐츠 캘린더</div>
+            <div class="panel-sub">홍보팀 콘텐츠 일정을 확인합니다.</div>
+          </div>
+          <button class="btn btn-outline" onclick="loadContentCal()">↻ 새로고침</button>
+        </div>
+        <!-- 범례 -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center">
+          <span style="font-size:11px;font-weight:700;color:var(--muted)">구분</span>
+          {% set cc = [('SNS','#e11d48'),('영상','#7c3aed'),('이벤트','#0284c7'),('블로그','#059669'),('기타','#6b7280')] %}
+          {% for label, color in cc %}
+          <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:{{ color }}22;color:{{ color }};border:1px solid {{ color }}55">
+            <span style="width:8px;height:8px;border-radius:50%;background:{{ color }};flex-shrink:0"></span>{{ label }}
+          </span>
+          {% endfor %}
+        </div>
+        <!-- 캘린더 -->
+        <div class="cal-section" style="border-color:var(--teal)33">
+          <div class="cal-header">
+            <button class="cal-nav-btn" onclick="contentCalNav(-1)">‹</button>
+            <span class="cal-title" id="content-cal-title" style="color:var(--teal)">—</span>
+            <button class="cal-nav-btn" onclick="contentCalNav(1)">›</button>
+            <button class="cal-today-btn" onclick="contentCalGoToday()">오늘</button>
+          </div>
+          <div id="content-cal-grid"></div>
+        </div>
+        <!-- 목록 -->
+        <div class="table-wrap">
+          <table>
+            <thead><tr style="background:linear-gradient(90deg,#0d9488,#0f766e)">
+              <th class="col-no">#</th><th>일정</th><th>구분</th><th>제목 / 제품명</th><th>비고</th><th>등록일</th>
+            </tr></thead>
+            <tbody id="content-cal-tbody">
+              <tr class="empty-row"><td colspan="6">새로고침을 눌러 불러오세요.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
   </main>
 </div>
 <div id="toast"></div>
@@ -1011,6 +1068,7 @@ const NAV_MAP = {
   'tasting-form':  ['nav-tasting-form',  'purple'],
   'tasting-team':  ['nav-tasting-team-toggle', 'purple'],
   'tasting-all':   ['nav-tasting-all',   'purple'],
+  'content-cal':   ['nav-content-cal',   'teal'],
 };
 
 // ── 패널 전환 ──────────────────────────────────────────────
@@ -1031,6 +1089,7 @@ function showPanel(panelId) {
   if (panelId === 'tasting-all')  loadAllData('tasting');
   if (panelId === 'promo-team')   renderDateTabs('promo',   'team');
   if (panelId === 'tasting-team') renderDateTabs('tasting', 'team');
+  if (panelId === 'content-cal')  loadContentCal();
 }
 
 // ── 팀 드롭다운 ───────────────────────────────────────────
@@ -1504,6 +1563,130 @@ async function submitAll(section) {
   } catch(e) { showToast('서버 오류가 발생했습니다.', 'error'); }
   btn.textContent = '✓ 제출하기';
   btn.disabled = state[section].entries.length === 0;
+}
+
+// ── 콘텐츠 캘린더 ─────────────────────────────────────────
+const CONTENT_COLORS = {
+  'SNS':'#e11d48','영상':'#7c3aed','이벤트':'#0284c7','블로그':'#059669','기타':'#6b7280'
+};
+function getContentColor(cat) { return CONTENT_COLORS[cat] || '#0d9488'; }
+
+const contentCal = { data: [], year: _cy, month: _cm };
+
+async function loadContentCal() {
+  const res = await fetch('/api/data?section=content');
+  contentCal.data = await res.json();
+  renderContentCal();
+  renderContentList();
+}
+
+function contentCalNav(dir) {
+  contentCal.month += dir;
+  if (contentCal.month > 12) { contentCal.month = 1; contentCal.year++; }
+  if (contentCal.month < 1)  { contentCal.month = 12; contentCal.year--; }
+  renderContentCal();
+}
+function contentCalGoToday() {
+  contentCal.year = _cy; contentCal.month = _cm;
+  renderContentCal();
+}
+
+function renderContentCal() {
+  const yr = contentCal.year, mo = contentCal.month;
+  const titleEl = document.getElementById('content-cal-title');
+  const gridEl  = document.getElementById('content-cal-grid');
+  if (!titleEl || !gridEl) return;
+  titleEl.textContent = `${yr}년 ${mo}월`;
+
+  const dayMap = {};
+  contentCal.data.forEach(entry => {
+    const days = getEventDays(entry, yr, mo);
+    if (!days.length) return;
+    const fd = Math.min(...days);
+    days.forEach(d => {
+      if (!dayMap[d]) dayMap[d] = [];
+      dayMap[d].push({ entry, isFirst: d === fd });
+    });
+  });
+
+  const fDow  = new Date(yr, mo - 1, 1).getDay();
+  const total = new Date(yr, mo, 0).getDate();
+  const todayD = (_now.getFullYear() === yr && _now.getMonth() + 1 === mo) ? _now.getDate() : -1;
+  const DOW = ['일','월','화','수','목','금','토'];
+
+  let html = '<div class="cal-dow-row">' + DOW.map(d => `<div class="cal-dow">${d}</div>`).join('') + '</div>';
+  html += '<div class="cal-days-grid">';
+  for (let i = 0; i < fDow; i++) html += '<div class="cal-day-empty"></div>';
+
+  for (let day = 1; day <= total; day++) {
+    const dow     = (fDow + day - 1) % 7;
+    const isToday = day === todayD;
+    const isWkend = dow === 0 || dow === 6;
+    const events  = dayMap[day] || [];
+    html += `<div class="cal-day${isToday?' cal-today':''}${isWkend?' cal-weekend':''}">`;
+    html += `<span class="cal-day-num${isToday?' cal-today-num':''}">${day}</span>`;
+    events.slice(0, 4).forEach(({ entry, isFirst }) => {
+      const color = getContentColor(entry.category);
+      const label = isFirst ? (entry.product.length > 9 ? entry.product.slice(0,9)+'…' : entry.product) : '';
+      html += `<span class="cal-event${isFirst?'':' cal-cont'}" style="background:${color}"
+                     data-content-id="${esc(entry.id)}"
+                     onmouseenter="showContentTip(event,this)" onmouseleave="hideCalTip()"
+                     >${esc(label)}</span>`;
+    });
+    if (events.length > 4) html += `<div class="cal-more">+${events.length - 4}개</div>`;
+    html += '</div>';
+  }
+  const rem = (fDow + total) % 7;
+  if (rem) for (let i = rem; i < 7; i++) html += '<div class="cal-day-empty"></div>';
+  html += '</div>';
+  gridEl.innerHTML = html;
+}
+
+function showContentTip(event, el) {
+  const id    = el.dataset.contentId;
+  const entry = contentCal.data.find(x => x.id === id);
+  if (!entry) return;
+  const color = getContentColor(entry.category);
+  const tip   = document.getElementById('calTooltip');
+  tip.innerHTML = `
+    <div class="ctt-product">${esc(entry.product)}</div>
+    <div class="ctt-row">
+      <span class="ctt-cat" style="background:${color}">${esc(entry.category)}</span>
+      <span class="ctt-schedule">${esc(fmtSchedule(entry.schedule))}</span>
+    </div>
+    ${entry.note ? `<div class="ctt-note">${esc(entry.note)}</div>` : ''}
+  `;
+  tip.classList.remove('hidden');
+  const mx = event.clientX + 16, my = event.clientY - 12;
+  tip.style.left = mx + 'px'; tip.style.top = my + 'px';
+  requestAnimationFrame(() => {
+    const r = tip.getBoundingClientRect();
+    if (r.right  > window.innerWidth  - 8) tip.style.left = (event.clientX - r.width  - 16) + 'px';
+    if (r.bottom > window.innerHeight - 8) tip.style.top  = (event.clientY - r.height + 12) + 'px';
+  });
+}
+
+function renderContentList() {
+  const tbody  = document.getElementById('content-cal-tbody');
+  if (!contentCal.data.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="6">📭 등록된 콘텐츠 일정이 없습니다.</td></tr>`;
+    return;
+  }
+  const sorted = [...contentCal.data].sort((a,b) => {
+    const sa = a.schedule.split('~')[0], sb = b.schedule.split('~')[0];
+    return sa < sb ? -1 : sa > sb ? 1 : 0;
+  });
+  tbody.innerHTML = sorted.map((d, i) => {
+    const color = getContentColor(d.category);
+    return `<tr>
+      <td class="col-no">${i+1}</td>
+      <td class="col-schedule">${esc(fmtSchedule(d.schedule))}</td>
+      <td><span class="tag" style="background:${color}22;color:${color};border:1px solid ${color}55">${esc(d.category)}</span></td>
+      <td class="col-product">${esc(d.product)}</td>
+      <td class="col-note">${esc(d.note||'')}</td>
+      <td class="col-ts">${esc(d.submitted_at||'')}</td>
+    </tr>`;
+  }).join('');
 }
 
 // ── 캘린더 ────────────────────────────────────────────────

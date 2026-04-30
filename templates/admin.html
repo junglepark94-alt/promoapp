@@ -145,6 +145,24 @@
   .hist-new { color:var(--success); font-weight:600; }
   .modal-btns { display:flex; justify-content:flex-end; margin-top:16px; }
 
+  /* CONTENT */
+  .content-card { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:20px; }
+  .content-card-header { background:linear-gradient(90deg,#0d9488,#0f766e); padding:13px 20px; }
+  .content-card-header h3 { color:white; font-size:14px; font-weight:600; }
+  .content-form { padding:20px; display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .content-form .field { display:flex; flex-direction:column; gap:5px; }
+  .content-form .field.full { grid-column:1/-1; }
+  .content-form label { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.3px; }
+  .content-form input, .content-form select, .content-form textarea {
+    width:100%; padding:10px 12px; border:1.5px solid var(--border); border-radius:8px;
+    font-family:'Noto Sans KR',sans-serif; font-size:13px; color:var(--text); outline:none;
+    transition:border-color 0.2s; background:white; }
+  .content-form input:focus, .content-form select:focus, .content-form textarea:focus { border-color:#0d9488; }
+  .content-form textarea { resize:vertical; min-height:64px; line-height:1.5; }
+  .teal-thead tr { background:linear-gradient(90deg,#0d9488,#0f766e) !important; }
+  .content-color { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700;
+    padding:2px 9px; border-radius:4px; white-space:nowrap; }
+
   /* TOAST */
   #toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(20px);
     padding:12px 28px; border-radius:10px; font-size:14px; font-weight:600; color:white;
@@ -199,13 +217,14 @@
     <div class="section-tabs">
       <button class="section-tab active" id="tab-promo"   onclick="switchSection('promo')">📋 프로모션 일정</button>
       <button class="section-tab"        id="tab-tasting" onclick="switchSection('tasting')">🧪 신제품 체험단</button>
+      <button class="section-tab"        id="tab-content" onclick="switchSection('content')">📅 콘텐츠 캘린더</button>
     </div>
 
-    <!-- 통계 -->
+    <!-- 통계 (promo/tasting) -->
     <div class="stats" id="statsArea"></div>
 
-    <!-- 필터 -->
-    <div class="filters">
+    <!-- 필터 (promo/tasting) -->
+    <div class="filters" id="adminFilters">
       <div class="filter-group">
         <label>담당팀</label>
         <select id="filterTeam" onchange="applyFilter()">
@@ -236,8 +255,8 @@
       <button class="btn btn-outline" onclick="resetFilters()">초기화</button>
     </div>
 
-    <!-- 테이블 -->
-    <div class="table-wrap">
+    <!-- 테이블 (promo/tasting) -->
+    <div class="table-wrap" id="adminTableWrap">
       <table>
         <thead>
           <tr>
@@ -255,6 +274,52 @@
         </thead>
         <tbody id="tableBody"></tbody>
       </table>
+    </div>
+
+    <!-- 콘텐츠 캘린더 섹션 -->
+    <div id="contentSection" style="display:none">
+      <div class="content-card">
+        <div class="content-card-header"><h3>콘텐츠 일정 등록</h3></div>
+        <div class="content-form">
+          <div class="field">
+            <label>시작일 *</label>
+            <input type="date" id="c-start">
+          </div>
+          <div class="field">
+            <label>마감일</label>
+            <input type="date" id="c-end">
+          </div>
+          <div class="field">
+            <label>구분 *</label>
+            <select id="c-category">
+              <option value="">선택</option>
+              {% for c in content_categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label>제목 / 제품명 *</label>
+            <input type="text" id="c-product" placeholder="예) 빵또아 SNS 릴스">
+          </div>
+          <div class="field full">
+            <label>비고</label>
+            <textarea id="c-note" placeholder="세부 내용, 플랫폼, 담당자 등"></textarea>
+          </div>
+          <div class="field full" style="margin-top:0">
+            <button class="btn btn-success" style="align-self:flex-start" onclick="addContentEntry()">＋ 등록</button>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:14px;font-weight:700;color:#0d9488;margin-bottom:12px">등록된 콘텐츠 일정</div>
+      <div class="table-wrap">
+        <table class="teal-table">
+          <thead class="teal-thead"><tr>
+            <th class="col-no">#</th><th>일정</th><th>구분</th><th>제목 / 제품명</th><th>비고</th><th>등록일</th><th>삭제</th>
+          </tr></thead>
+          <tbody id="contentTableBody">
+            <tr class="empty-row"><td colspan="7">등록된 항목이 없습니다.</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
   </div><!-- /dashboard -->
@@ -311,13 +376,29 @@ async function doLogin() {
 })();
 
 // ── 섹션 전환 ─────────────────────────────────────────────
+const CONTENT_COLORS_ADMIN = {
+  'SNS':'#e11d48','영상':'#7c3aed','이벤트':'#0284c7','블로그':'#059669','기타':'#6b7280'
+};
+function getContentColor(cat) { return CONTENT_COLORS_ADMIN[cat] || '#0d9488'; }
+
 function switchSection(section) {
   curSection = section;
-  document.getElementById('tab-promo').classList.toggle('active',   section === 'promo');
-  document.getElementById('tab-tasting').classList.toggle('active', section === 'tasting');
-  document.getElementById('exportBtn').href = `/export?section=${section}`;
-  resetFilters();
-  loadData();
+  const isContent = section === 'content';
+  ['tab-promo','tab-tasting','tab-content'].forEach(id => {
+    document.getElementById(id).classList.toggle('active', id === 'tab-' + section);
+  });
+  document.getElementById('statsArea').style.display      = isContent ? 'none' : '';
+  document.getElementById('adminFilters').style.display   = isContent ? 'none' : '';
+  document.getElementById('adminTableWrap').style.display = isContent ? 'none' : '';
+  document.getElementById('contentSection').style.display = isContent ? 'block' : 'none';
+  document.getElementById('exportBtn').style.display      = isContent ? 'none' : '';
+  if (isContent) {
+    loadContentData();
+  } else {
+    document.getElementById('exportBtn').href = `/export?section=${section}`;
+    resetFilters();
+    loadData();
+  }
 }
 
 // ── 데이터 로드 ───────────────────────────────────────────
@@ -371,11 +452,15 @@ function resetFilters() {
 
 // ── 테이블 렌더링 ─────────────────────────────────────────
 function fmtSchedule(s) {
-  if (/^\d{4}-\d{2}$/.test(s)) {
-    const [y, m] = s.split('-');
-    return `${y}년 ${parseInt(m)}월 (미정)`;
-  }
-  return s || '';
+  if (!s) return '';
+  return s.split('~').map(p => {
+    p = p.trim();
+    if (/^\d{4}-\d{2}$/.test(p)) {
+      const [y, m] = p.split('-');
+      return `${y}년 ${parseInt(m)}월 (미정)`;
+    }
+    return p;
+  }).join(' ~ ');
 }
 
 function renderTable(data) {
@@ -454,6 +539,72 @@ function showHist(id) {
 
 function closeHist() {
   document.getElementById('histModal').classList.add('hidden');
+}
+
+// ── 콘텐츠 캘린더 관리 ────────────────────────────────────
+let contentData = [];
+
+async function loadContentData() {
+  const res = await fetch('/api/data?section=content');
+  contentData = await res.json();
+  renderContentTable();
+}
+
+async function addContentEntry() {
+  const start    = document.getElementById('c-start').value;
+  const end      = document.getElementById('c-end').value;
+  const category = document.getElementById('c-category').value;
+  const product  = document.getElementById('c-product').value.trim();
+  const note     = document.getElementById('c-note').value.trim();
+  if (!start) return showToast('시작일을 입력하세요.', 'error');
+  if (!category) return showToast('구분을 선택하세요.', 'error');
+  if (!product) return showToast('제목을 입력하세요.', 'error');
+  const res  = await fetch('/api/content/add', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ start, end, category, product, note })
+  });
+  const data = await res.json();
+  if (data.success) {
+    showToast('등록 완료!', 'success');
+    document.getElementById('c-start').value    = '';
+    document.getElementById('c-end').value      = '';
+    document.getElementById('c-category').value = '';
+    document.getElementById('c-product').value  = '';
+    document.getElementById('c-note').value     = '';
+    loadContentData();
+  } else { showToast(data.message || '등록 실패', 'error'); }
+}
+
+async function deleteContent(id) {
+  if (!confirm('이 항목을 삭제하시겠습니까?')) return;
+  const res  = await fetch(`/api/delete/${id}`, { method: 'DELETE' });
+  const data = await res.json();
+  if (data.success) { showToast('삭제되었습니다.', 'success'); loadContentData(); }
+  else showToast(data.message || '삭제 실패', 'error');
+}
+
+function renderContentTable() {
+  const tbody = document.getElementById('contentTableBody');
+  if (!contentData.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="7">📭 등록된 항목이 없습니다.</td></tr>`;
+    return;
+  }
+  const sorted = [...contentData].sort((a, b) => {
+    const sa = a.schedule.split('~')[0], sb = b.schedule.split('~')[0];
+    return sa < sb ? -1 : sa > sb ? 1 : 0;
+  });
+  tbody.innerHTML = sorted.map((d, i) => {
+    const color = getContentColor(d.category);
+    return `<tr>
+      <td class="col-no">${i+1}</td>
+      <td class="col-schedule">${esc(fmtSchedule(d.schedule))}</td>
+      <td><span class="content-color" style="background:${color}22;color:${color};border:1px solid ${color}55">${esc(d.category)}</span></td>
+      <td class="col-product">${esc(d.product)}</td>
+      <td class="col-note">${esc(d.note||'')}</td>
+      <td class="col-ts">${esc(d.submitted_at||'')}</td>
+      <td><button class="btn btn-sm btn-outline" style="border-color:#fca5a5;color:var(--danger)" onclick="deleteContent('${d.id}')">삭제</button></td>
+    </tr>`;
+  }).join('');
 }
 
 // ── 유틸 ──────────────────────────────────────────────────

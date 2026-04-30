@@ -20,6 +20,7 @@ TEAMS = [
 
 CATEGORIES         = ["신제품", "리뉴얼", "프로모션", "박람회", "기타"]
 TASTING_CATEGORIES = ["신제품", "리뉴얼", "기타"]
+CONTENT_CATEGORIES = ["SNS", "영상", "이벤트", "블로그", "기타"]
 TASTING_TEAMS      = [t for t in TEAMS if t not in ("해외", "콘텐츠전략팀")]
 
 EDITABLE_FIELDS = ["team", "name", "schedule", "category", "product", "note"]
@@ -109,7 +110,42 @@ def admin():
     return render_template("admin.html",
         teams=TEAMS,
         categories=CATEGORIES,
-        tasting_categories=TASTING_CATEGORIES)
+        tasting_categories=TASTING_CATEGORIES,
+        content_categories=CONTENT_CATEGORIES)
+
+@app.route("/api/content/add", methods=["POST"])
+def content_add():
+    if not session.get("admin"):
+        return jsonify({"success": False, "message": "권한이 없습니다."}), 403
+    body     = request.json or {}
+    product  = body.get("product", "").strip()
+    start    = body.get("start", "").strip()
+    end      = body.get("end", "").strip()
+    category = body.get("category", "기타")
+    note     = body.get("note", "")
+    if not product or not start:
+        return jsonify({"success": False, "message": "제목과 시작일을 입력하세요."}), 400
+    schedule = f"{start}~{end}" if end else start
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    if USE_DB:
+        with db() as cur:
+            eid = f"{now}_c_{os.urandom(3).hex()}"
+            cur.execute("""
+                INSERT INTO entries
+                    (id, team, name, schedule, category, product, note, submitted_at, section)
+                VALUES (%s,'관리자','관리자',%s,%s,%s,%s,%s,'content')
+            """, (eid, schedule, category, product, note, now))
+    else:
+        data = load_data()
+        eid  = f"{now}_c_{len(data)}"
+        data.append({
+            "id": eid, "team": "관리자", "name": "관리자",
+            "schedule": schedule, "category": category, "product": product,
+            "note": note, "submitted_at": now, "section": "content",
+            "approved": False, "approved_at": None, "updated_at": None, "update_history": []
+        })
+        save_data(data)
+    return jsonify({"success": True, "message": "등록 완료!"})
 
 @app.route("/api/auth", methods=["POST"])
 def auth():
