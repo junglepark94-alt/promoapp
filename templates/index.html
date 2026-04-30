@@ -278,6 +278,44 @@
   .date-tab.active-blue   { background:var(--navy);   border-color:var(--navy);   color:white; }
   .date-tab.active-purple { background:var(--purple); border-color:var(--purple); color:white; }
 
+  /* ── CALENDAR ── */
+  .cal-section { background:var(--card); border:1px solid var(--border); border-radius:14px; margin-bottom:20px; overflow:hidden; box-shadow:0 2px 12px rgba(15,31,61,0.06); }
+  .cal-header { display:flex; align-items:center; gap:10px; padding:10px 18px; border-bottom:1px solid var(--border); background:var(--accent); }
+  .cal-title { font-size:14px; font-weight:700; color:var(--navy); min-width:110px; text-align:center; }
+  .cal-nav-btn { background:white; border:1.5px solid var(--border); border-radius:6px; width:28px; height:28px; cursor:pointer; font-size:14px; color:var(--muted); display:inline-flex; align-items:center; justify-content:center; transition:all 0.15s; padding:0; }
+  .cal-nav-btn:hover { background:var(--accent); color:var(--text); border-color:var(--sky); }
+  .cal-today-btn { margin-left:auto; font-size:11px; font-weight:600; padding:4px 10px; border-radius:6px; border:1.5px solid var(--border); background:white; color:var(--muted); cursor:pointer; transition:all 0.15s; }
+  .cal-today-btn:hover { background:var(--accent); border-color:var(--sky); color:var(--text); }
+  .cal-dow-row { display:grid; grid-template-columns:repeat(7,1fr); border-bottom:1px solid var(--border); background:rgba(0,0,0,0.02); }
+  .cal-dow { text-align:center; font-size:11px; font-weight:700; color:var(--muted); padding:5px 0; }
+  .cal-dow:first-child { color:var(--danger); }
+  .cal-dow:last-child  { color:#2563eb; }
+  .cal-days-grid { display:grid; grid-template-columns:repeat(7,1fr); }
+  .cal-day { border-top:1px solid var(--border); border-right:1px solid var(--border); min-height:82px; padding:5px 4px 4px; box-sizing:border-box; background:white; }
+  .cal-day:nth-child(7n) { border-right:none; }
+  .cal-day-empty { border-top:1px solid var(--border); border-right:1px solid var(--border); min-height:82px; background:rgba(0,0,0,0.02); }
+  .cal-day-empty:nth-child(7n) { border-right:none; }
+  .cal-day.cal-weekend { background:#fffcfc; }
+  .cal-day.cal-today { background:#fff5f5; }
+  .cal-day-num { font-size:11px; font-weight:600; color:var(--muted); line-height:1; margin-bottom:4px; display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; }
+  .cal-day-num.cal-today-num { background:var(--blue); color:white; border-radius:50%; font-size:10px; font-weight:700; }
+  .cal-day.cal-weekend .cal-day-num { color:#2563eb; }
+  .cal-day:nth-child(7n+1) .cal-day-num { color:var(--danger); }
+  .cal-day.cal-today .cal-day-num { color:white !important; }
+  .cal-event { font-size:10px; color:white; border-radius:3px; padding:2px 5px; margin-bottom:2px; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.45; transition:opacity 0.12s; display:block; }
+  .cal-event:hover { opacity:0.78; }
+  .cal-event.cal-cont { opacity:0.55; font-size:9px; padding:2px 4px; }
+  .cal-more { font-size:9px; color:var(--muted); padding-left:2px; line-height:1.5; }
+  #calTooltip { position:fixed; z-index:700; background:#1e293b; color:#f1f5f9; border-radius:12px; padding:13px 16px; min-width:190px; max-width:270px; font-size:12px; line-height:1.55; box-shadow:0 8px 32px rgba(0,0,0,0.35); pointer-events:none; }
+  #calTooltip.hidden { display:none; }
+  .ctt-product { font-size:13px; font-weight:700; color:white; margin-bottom:6px; line-height:1.4; word-break:keep-all; }
+  .ctt-meta { color:#94a3b8; font-size:11px; margin-bottom:2px; }
+  .ctt-row { display:flex; align-items:center; gap:6px; margin-top:3px; }
+  .ctt-cat { font-size:11px; font-weight:700; padding:1px 7px; border-radius:3px; color:white; }
+  .ctt-schedule { color:#94a3b8; font-size:11px; }
+  .ctt-note { color:#cbd5e1; font-size:11px; margin-top:6px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.1); word-break:keep-all; }
+  .ctt-approved { color:#4ade80; font-size:11px; font-weight:700; margin-top:4px; }
+
   /* ── TOAST ── */
   #toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(20px); padding:12px 28px; border-radius:10px; font-size:14px; font-weight:600; color:white; opacity:0; transition:all 0.3s; z-index:999; pointer-events:none; }
   #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
@@ -330,6 +368,9 @@
 
     .btn-row { justify-content: center; }
     .entry-item { padding: 12px; gap: 10px; }
+    .cal-day { min-height: 58px; padding: 3px 2px 2px; }
+    .cal-event { font-size: 9px; padding: 1px 3px; }
+    .cal-day-num { font-size: 10px; width: 16px; height: 16px; }
   }
 </style>
 </head>
@@ -533,6 +574,15 @@
           <div class="date-tab-row"><span class="tab-row-label">연도</span><div class="date-tabs" id="promo-team-yearTabs"></div></div>
           <div class="date-tab-row"><span class="tab-row-label">월</span><div class="date-tabs" id="promo-team-monthTabs"></div></div>
         </div>
+        <div class="cal-section">
+          <div class="cal-header">
+            <button class="cal-nav-btn" onclick="calNav('promo','team',-1)">‹</button>
+            <span class="cal-title" id="promo-team-cal-title">—</span>
+            <button class="cal-nav-btn" onclick="calNav('promo','team',1)">›</button>
+            <button class="cal-today-btn" onclick="calToday('promo','team')">오늘</button>
+          </div>
+          <div id="promo-team-cal-grid"></div>
+        </div>
         <div class="table-wrap">
           <table>
             <thead><tr>
@@ -565,6 +615,15 @@
         <div class="date-tabs-wrap">
           <div class="date-tab-row"><span class="tab-row-label">연도</span><div class="date-tabs" id="promo-all-yearTabs"></div></div>
           <div class="date-tab-row"><span class="tab-row-label">월</span><div class="date-tabs" id="promo-all-monthTabs"></div></div>
+        </div>
+        <div class="cal-section">
+          <div class="cal-header">
+            <button class="cal-nav-btn" onclick="calNav('promo','all',-1)">‹</button>
+            <span class="cal-title" id="promo-all-cal-title">—</span>
+            <button class="cal-nav-btn" onclick="calNav('promo','all',1)">›</button>
+            <button class="cal-today-btn" onclick="calToday('promo','all')">오늘</button>
+          </div>
+          <div id="promo-all-cal-grid"></div>
         </div>
         <div class="filters">
           <div class="filter-group">
@@ -745,6 +804,15 @@
           <div class="date-tab-row"><span class="tab-row-label">연도</span><div class="date-tabs" id="tasting-team-yearTabs"></div></div>
           <div class="date-tab-row"><span class="tab-row-label">월</span><div class="date-tabs" id="tasting-team-monthTabs"></div></div>
         </div>
+        <div class="cal-section">
+          <div class="cal-header">
+            <button class="cal-nav-btn" onclick="calNav('tasting','team',-1)">‹</button>
+            <span class="cal-title" id="tasting-team-cal-title">—</span>
+            <button class="cal-nav-btn" onclick="calNav('tasting','team',1)">›</button>
+            <button class="cal-today-btn" onclick="calToday('tasting','team')">오늘</button>
+          </div>
+          <div id="tasting-team-cal-grid"></div>
+        </div>
         <div class="table-wrap">
           <table>
             <thead><tr class="purple">
@@ -777,6 +845,15 @@
         <div class="date-tabs-wrap">
           <div class="date-tab-row"><span class="tab-row-label">연도</span><div class="date-tabs" id="tasting-all-yearTabs"></div></div>
           <div class="date-tab-row"><span class="tab-row-label">월</span><div class="date-tabs" id="tasting-all-monthTabs"></div></div>
+        </div>
+        <div class="cal-section">
+          <div class="cal-header">
+            <button class="cal-nav-btn" onclick="calNav('tasting','all',-1)">‹</button>
+            <span class="cal-title" id="tasting-all-cal-title">—</span>
+            <button class="cal-nav-btn" onclick="calNav('tasting','all',1)">›</button>
+            <button class="cal-today-btn" onclick="calToday('tasting','all')">오늘</button>
+          </div>
+          <div id="tasting-all-cal-grid"></div>
         </div>
         <div class="filters">
           <div class="filter-group">
@@ -813,6 +890,7 @@
   </main>
 </div>
 <div id="toast"></div>
+<div id="calTooltip" class="hidden"></div>
 
 <!-- ── 수정 모달 ── -->
 <div class="modal-overlay hidden" id="editModal" onclick="if(event.target===this)closeEditModal()">
@@ -912,9 +990,14 @@ function onEditCategoryChange() {
 }
 
 // ── 상태 ──────────────────────────────────────────────────
+const _now = new Date();
+const _cy  = _now.getFullYear();
+const _cm  = _now.getMonth() + 1;
 const state = {
-  promo:   { entries: [], allData: [], teamData: [], year: 'all', month: 'all' },
-  tasting: { entries: [], allData: [], teamData: [], year: 'all', month: 'all' }
+  promo:   { entries: [], allData: [], teamData: [], year: 'all', month: 'all',
+             cal: { team: { year: _cy, month: _cm }, all: { year: _cy, month: _cm } } },
+  tasting: { entries: [], allData: [], teamData: [], year: 'all', month: 'all',
+             cal: { team: { year: _cy, month: _cm }, all: { year: _cy, month: _cm } } }
 };
 const TEAMS_JS = {{ teams|tojson }};
 const CATS_PROMO   = {{ categories|tojson }};
@@ -1028,12 +1111,14 @@ function renderDateTabs(section, ctx) {
 
 function setYear(section, ctx, year) {
   state[section].year = year;
+  if (year !== 'all') state[section].cal[ctx].year = parseInt(year);
   renderDateTabs(section, ctx);
   if (ctx === 'all') applyFilter(section); else renderTeamTable(section);
 }
 
 function setMonth(section, ctx, month) {
   state[section].month = month;
+  if (month !== 'all') state[section].cal[ctx].month = parseInt(month);
   renderDateTabs(section, ctx);
   if (ctx === 'all') applyFilter(section); else renderTeamTable(section);
 }
@@ -1075,6 +1160,7 @@ function renderTeamTable(section) {
       <td style="text-align:center">${d.approved ? '<span class="approved-mark" title="승인됨">✓ 승인</span>' : '<span style="color:var(--muted);font-size:12px">—</span>'}</td>
     </tr>
   `).join('');
+  renderCalendar(section, 'team');
 }
 
 // ── 전체 데이터 로드 ──────────────────────────────────────
@@ -1147,6 +1233,7 @@ function applyFilter(section) {
       </td>
     </tr>
   `).join('');
+  renderCalendar(section, 'all');
 }
 
 function resetFilters(section) {
@@ -1418,6 +1505,167 @@ async function submitAll(section) {
   btn.textContent = '✓ 제출하기';
   btn.disabled = state[section].entries.length === 0;
 }
+
+// ── 캘린더 ────────────────────────────────────────────────
+const CAT_COLORS = {
+  '신제품':'#2563eb','리뉴얼':'#9333ea','프로모션':'#16a34a',
+  '박람회':'#ea580c','기타':'#6b7280'
+};
+function getCatColor(cat) { return CAT_COLORS[cat] || '#6b7280'; }
+
+function getEventDays(entry, yr, mo) {
+  const sched = (entry.schedule || '').split('~');
+  const startStr = sched[0].trim();
+  const endStr   = sched[1] ? sched[1].trim() : '';
+  const mStart = new Date(yr, mo - 1, 1);
+  const mEnd   = new Date(yr, mo,     0);
+
+  function parse(s, isEnd) {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return new Date(s);
+    if (/^\d{4}-\d{2}$/.test(s)) {
+      const [y, m] = s.split('-').map(Number);
+      return isEnd ? new Date(y, m, 0) : new Date(y, m - 1, 1);
+    }
+    return null;
+  }
+
+  let start = parse(startStr, false);
+  if (!start) return [];
+  let end = endStr ? (parse(endStr, true) || start)
+          : (/^\d{4}-\d{2}$/.test(startStr)
+              ? parse(startStr, true)   // partial single → whole month
+              : start);
+
+  const cs = start < mStart ? mStart : start;
+  const ce = end   > mEnd   ? mEnd   : end;
+  if (cs > ce) return [];
+
+  const days = [];
+  const cur  = new Date(cs);
+  while (cur <= ce) { days.push(cur.getDate()); cur.setDate(cur.getDate() + 1); }
+  return days;
+}
+
+function getCalData(section, ctx) {
+  if (ctx === 'team') return state[section].teamData;
+  const team   = document.getElementById(section + '-filterTeam')?.value  || '';
+  const cat    = document.getElementById(section + '-filterCat')?.value   || '';
+  const search = (document.getElementById(section + '-filterSearch')?.value || '').toLowerCase();
+  return state[section].allData.filter(d => {
+    if (team   && d.team     !== team) return false;
+    if (cat    && d.category !== cat)  return false;
+    if (search && !d.product.toLowerCase().includes(search) &&
+        !(d.note||'').toLowerCase().includes(search)) return false;
+    return true;
+  });
+}
+
+function renderCalendar(section, ctx) {
+  const c      = state[section].cal[ctx];
+  const yr     = c.year, mo = c.month;
+  const titleEl = document.getElementById(`${section}-${ctx}-cal-title`);
+  const gridEl  = document.getElementById(`${section}-${ctx}-cal-grid`);
+  if (!titleEl || !gridEl) return;
+  titleEl.textContent = `${yr}년 ${mo}월`;
+
+  const data     = getCalData(section, ctx);
+  const dayMap   = {};
+  const firstDay = {};
+
+  data.forEach(entry => {
+    const days = getEventDays(entry, yr, mo);
+    if (!days.length) return;
+    const fd = Math.min(...days);
+    days.forEach(d => {
+      if (!dayMap[d]) dayMap[d] = [];
+      dayMap[d].push({ entry, isFirst: d === fd });
+    });
+  });
+
+  const fDow     = new Date(yr, mo - 1, 1).getDay();
+  const total    = new Date(yr, mo, 0).getDate();
+  const todayD   = (_now.getFullYear() === yr && _now.getMonth() + 1 === mo) ? _now.getDate() : -1;
+  const DOW      = ['일','월','화','수','목','금','토'];
+
+  let html = '<div class="cal-dow-row">' + DOW.map(d => `<div class="cal-dow">${d}</div>`).join('') + '</div>';
+  html += '<div class="cal-days-grid">';
+  for (let i = 0; i < fDow; i++) html += '<div class="cal-day-empty"></div>';
+
+  for (let day = 1; day <= total; day++) {
+    const dow      = (fDow + day - 1) % 7;
+    const isToday  = day === todayD;
+    const isWkend  = dow === 0 || dow === 6;
+    const events   = dayMap[day] || [];
+    const maxShow  = 3;
+
+    html += `<div class="cal-day${isToday?' cal-today':''}${isWkend?' cal-weekend':''}">`;
+    html += `<span class="cal-day-num${isToday?' cal-today-num':''}">${day}</span>`;
+
+    events.slice(0, maxShow).forEach(({ entry, isFirst }) => {
+      const color = getCatColor(entry.category);
+      const label = isFirst
+        ? (entry.product.length > 8 ? entry.product.slice(0, 8) + '…' : entry.product)
+        : '';
+      html += `<span class="cal-event${isFirst?'':' cal-cont'}" style="background:${color}"
+                     data-eid="${esc(entry.id)}" data-sec="${section}" data-ctx="${ctx}"
+                     onmouseenter="showCalTip(event,this)" onmouseleave="hideCalTip()"
+                     >${esc(label)}</span>`;
+    });
+    if (events.length > maxShow) html += `<div class="cal-more">+${events.length - maxShow}개</div>`;
+    html += '</div>';
+  }
+
+  const filled = fDow + total;
+  const rem    = filled % 7;
+  if (rem) for (let i = rem; i < 7; i++) html += '<div class="cal-day-empty"></div>';
+  html += '</div>';
+  gridEl.innerHTML = html;
+}
+
+function calNav(section, ctx, dir) {
+  const c = state[section].cal[ctx];
+  c.month += dir;
+  if (c.month > 12) { c.month = 1; c.year++; }
+  if (c.month < 1)  { c.month = 12; c.year--; }
+  renderCalendar(section, ctx);
+}
+function calToday(section, ctx) {
+  state[section].cal[ctx] = { year: _now.getFullYear(), month: _now.getMonth() + 1 };
+  renderCalendar(section, ctx);
+}
+
+function showCalTip(event, el) {
+  const id  = el.dataset.eid;
+  const sec = el.dataset.sec;
+  const ctx = el.dataset.ctx;
+  const src = ctx === 'team' ? state[sec].teamData : state[sec].allData;
+  const e   = src.find(x => x.id === id);
+  if (!e) return;
+
+  const color = getCatColor(e.category);
+  const tip   = document.getElementById('calTooltip');
+  tip.innerHTML = `
+    <div class="ctt-product">${esc(e.product)}</div>
+    <div class="ctt-meta">${ctx === 'all' ? esc(e.team) + ' · ' : ''}${esc(e.name)}</div>
+    <div class="ctt-row">
+      <span class="ctt-cat" style="background:${color}">${esc(e.category)}</span>
+      <span class="ctt-schedule">${esc(fmtSchedule(e.schedule))}</span>
+    </div>
+    ${e.note ? `<div class="ctt-note">${esc(e.note)}</div>` : ''}
+    ${e.approved ? '<div class="ctt-approved">✓ 승인됨</div>' : ''}
+  `;
+  tip.classList.remove('hidden');
+
+  const mx = event.clientX + 16, my = event.clientY - 12;
+  tip.style.left = mx + 'px';
+  tip.style.top  = my + 'px';
+  requestAnimationFrame(() => {
+    const r = tip.getBoundingClientRect();
+    if (r.right  > window.innerWidth  - 8) tip.style.left = (event.clientX - r.width - 16) + 'px';
+    if (r.bottom > window.innerHeight - 8) tip.style.top  = (event.clientY - r.height + 12) + 'px';
+  });
+}
+function hideCalTip() { document.getElementById('calTooltip').classList.add('hidden'); }
 
 // ── 유틸 ──────────────────────────────────────────────────
 function esc(s) {
