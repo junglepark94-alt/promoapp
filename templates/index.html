@@ -514,10 +514,10 @@
         <div class="table-wrap">
           <table>
             <thead><tr>
-              <th class="col-no">#</th><th>일정</th><th>담당자</th><th>구분</th><th>제품명 / 행사명</th><th>비고</th><th>제출시각</th>
+              <th class="col-no">#</th><th>일정</th><th>담당자</th><th>구분</th><th>제품명 / 행사명</th><th>비고</th><th>제출시각</th><th>승인여부</th>
             </tr></thead>
             <tbody id="promo-teamTableBody">
-              <tr class="empty-row"><td colspan="7">좌측 메뉴에서 팀을 선택하세요.</td></tr>
+              <tr class="empty-row"><td colspan="8">좌측 메뉴에서 팀을 선택하세요.</td></tr>
             </tbody>
           </table>
         </div>
@@ -568,7 +568,7 @@
         <div class="table-wrap">
           <table>
             <thead><tr>
-              <th class="col-no">#</th><th>일정</th><th>담당팀</th><th>담당자</th><th>구분</th><th>제품명 / 행사명</th><th>비고</th><th>제출시각</th><th></th>
+              <th class="col-no">#</th><th>일정</th><th>담당팀</th><th>담당자</th><th>구분</th><th>제품명 / 행사명</th><th>비고</th><th>제출시각</th><th>승인여부</th><th></th>
             </tr></thead>
             <tbody id="promo-allTableBody"></tbody>
           </table>
@@ -689,10 +689,10 @@
         <div class="table-wrap">
           <table>
             <thead><tr class="purple">
-              <th class="col-no">#</th><th>일정</th><th>담당자</th><th>구분</th><th>제품명</th><th>비고</th><th>제출시각</th>
+              <th class="col-no">#</th><th>일정</th><th>담당자</th><th>구분</th><th>제품명</th><th>비고</th><th>제출시각</th><th>승인여부</th>
             </tr></thead>
             <tbody id="tasting-teamTableBody">
-              <tr class="empty-row"><td colspan="7">좌측 메뉴에서 팀을 선택하세요.</td></tr>
+              <tr class="empty-row"><td colspan="8">좌측 메뉴에서 팀을 선택하세요.</td></tr>
             </tbody>
           </table>
         </div>
@@ -743,7 +743,7 @@
         <div class="table-wrap">
           <table>
             <thead><tr class="purple">
-              <th class="col-no">#</th><th>일정</th><th>담당팀</th><th>담당자</th><th>구분</th><th>제품명</th><th>비고</th><th>제출시각</th><th></th>
+              <th class="col-no">#</th><th>일정</th><th>담당팀</th><th>담당자</th><th>구분</th><th>제품명</th><th>비고</th><th>제출시각</th><th>승인여부</th><th></th>
             </tr></thead>
             <tbody id="tasting-allTableBody"></tbody>
           </table>
@@ -960,7 +960,7 @@ function renderTeamTable(section) {
   });
   const tbody = document.getElementById(section + '-teamTableBody');
   if (!data.length) {
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="7">📭 제출된 항목이 없습니다.</td></tr>`;
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="8">📭 제출된 항목이 없습니다.</td></tr>`;
     return;
   }
   tbody.innerHTML = data.map((d, i) => `
@@ -972,6 +972,7 @@ function renderTeamTable(section) {
       <td class="col-product">${esc(d.product)}</td>
       <td class="col-note">${esc(d.note||'')}</td>
       <td class="col-ts">${esc(d.submitted_at||'')}</td>
+      <td style="text-align:center">${d.approved ? '<span class="approved-mark" title="승인됨">✓ 승인</span>' : '<span style="color:var(--muted);font-size:12px">—</span>'}</td>
     </tr>
   `).join('');
 }
@@ -1026,7 +1027,7 @@ function applyFilter(section) {
 
   const tbody = document.getElementById(section + '-allTableBody');
   if (!filtered.length) {
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="9">📭 해당하는 항목이 없습니다.</td></tr>`;
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="10">📭 해당하는 항목이 없습니다.</td></tr>`;
     return;
   }
   tbody.innerHTML = filtered.map((d, i) => `
@@ -1036,9 +1037,10 @@ function applyFilter(section) {
       <td class="col-team">${esc(d.team)}</td>
       <td>${esc(d.name)}</td>
       <td><span class="tag tag-${d.category}">${esc(d.category)}</span></td>
-      <td class="col-product">${d.approved ? '<span class="approved-mark" title="승인됨">✓</span>' : ''}${esc(d.product)}</td>
+      <td class="col-product">${esc(d.product)}</td>
       <td class="col-note">${esc(d.note||'')}</td>
       <td class="col-ts">${esc(d.submitted_at||'')}</td>
+      <td style="text-align:center">${d.approved ? '<span class="approved-mark" title="승인됨">✓ 승인</span>' : '<span style="color:var(--muted);font-size:12px">—</span>'}</td>
       <td style="white-space:nowrap">
         <button class="edit-btn" onclick="openEditById('${d.id}','${section}')">수정</button>
         <button class="del-btn"  onclick="deleteEntry('${d.id}','${section}')">삭제</button>
