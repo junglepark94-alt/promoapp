@@ -12,7 +12,7 @@
     --navy:    #6e1212;
     --blue:    #c41e1e;
     --sky:     #e05252;
-    --purple:  #5b21b6;
+    --purple:  #1565c0;
     --accent:  #fdf2f2;
     --border:  #e8d4d4;
     --text:    #1f1818;
@@ -152,7 +152,7 @@
   .card { background:var(--card); border-radius:14px; border:1px solid var(--border); box-shadow:0 2px 16px rgba(15,31,61,0.07); overflow:hidden; margin-bottom:20px; }
   .card-header { padding:16px 24px; display:flex; align-items:center; gap:10px; }
   .card-header.blue   { background:linear-gradient(90deg,var(--navy) 0%,#8b1a1a 100%); }
-  .card-header.purple { background:linear-gradient(90deg,#3b0764 0%,var(--purple) 100%); }
+  .card-header.purple { background:linear-gradient(90deg,#0d3a6e 0%,var(--purple) 100%); }
   .card-header h2 { color:white; font-size:14px; font-weight:600; }
   .card-body { padding:24px; }
 
@@ -189,8 +189,8 @@
   .btn { padding:9px 18px; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.18s; border:none; display:inline-flex; align-items:center; gap:6px; text-decoration:none; }
   .btn-primary { background:var(--blue); color:white; box-shadow:0 2px 8px rgba(196,30,30,0.25); }
   .btn-primary:hover { background:#a01515; transform:translateY(-1px); }
-  .btn-primary.purple { background:var(--purple); box-shadow:0 2px 8px rgba(91,33,182,0.22); }
-  .btn-primary.purple:hover { background:#4c1d95; }
+  .btn-primary.purple { background:var(--purple); box-shadow:0 2px 8px rgba(21,101,192,0.25); }
+  .btn-primary.purple:hover { background:#0d47a1; }
   .btn-outline { background:white; color:var(--blue); border:1.5px solid var(--border); }
   .btn-outline:hover { border-color:var(--sky); background:var(--accent); }
   .btn-success { background:var(--success); color:white; box-shadow:0 2px 8px rgba(22,163,74,0.22); }
@@ -235,7 +235,7 @@
   .table-wrap { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; box-shadow:0 2px 12px rgba(15,31,61,0.06); }
   table { width:100%; border-collapse:collapse; }
   thead tr { background:linear-gradient(90deg,var(--navy) 0%,#8b1a1a 100%); }
-  thead tr.purple { background:linear-gradient(90deg,#3b0764 0%,var(--purple) 100%); }
+  thead tr.purple { background:linear-gradient(90deg,#0d3a6e 0%,var(--purple) 100%); }
   thead th { padding:13px 14px; font-size:12px; font-weight:700; color:white; text-align:left; white-space:nowrap; letter-spacing:0.3px; }
   tbody tr { border-bottom:1px solid var(--border); transition:background 0.12s; }
   tbody tr:last-child { border-bottom:none; }
@@ -756,8 +756,10 @@ function showPanel(panelId) {
     btn.classList.add('active', colorClass);
   }
 
-  if (panelId === 'promo-all')   loadAllData('promo');
-  if (panelId === 'tasting-all') loadAllData('tasting');
+  if (panelId === 'promo-all')    loadAllData('promo');
+  if (panelId === 'tasting-all')  loadAllData('tasting');
+  if (panelId === 'promo-team')   renderDateTabs('promo',   'team');
+  if (panelId === 'tasting-team') renderDateTabs('tasting', 'team');
 }
 
 // ── 팀 드롭다운 ───────────────────────────────────────────
