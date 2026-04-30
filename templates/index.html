@@ -1235,8 +1235,7 @@ function renderTeamTable(section) {
   const tbody = document.getElementById(section + '-teamTableBody');
   if (!data.length) {
     tbody.innerHTML = `<tr class="empty-row"><td colspan="9">📭 제출된 항목이 없습니다.</td></tr>`;
-    return;
-  }
+  } else {
   tbody.innerHTML = data.map((d, i) => `
     <tr>
       <td class="col-no col-hide-mob">${i+1}</td>
@@ -1253,6 +1252,7 @@ function renderTeamTable(section) {
       </td>
     </tr>
   `).join('');
+  }
   renderCalendar(section, 'team');
 }
 
