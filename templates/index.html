@@ -177,7 +177,17 @@
   .btn-success { background:var(--success); color:white; box-shadow:0 2px 8px rgba(22,163,74,0.22); }
   .btn-success:hover { background:#15803d; transform:translateY(-1px); }
   .btn:disabled { opacity:0.45; cursor:not-allowed; transform:none !important; }
-  .btn-row { display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; }
+  .btn-row { display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; justify-content:center; }
+
+  /* ── MODAL ── */
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; z-index:200; }
+  .modal-overlay.hidden { display:none; }
+  .modal-box { background:white; border-radius:16px; padding:32px; width:360px; max-width:90vw; box-shadow:0 8px 40px rgba(0,0,0,0.2); }
+  .modal-title { font-size:17px; font-weight:700; color:var(--navy); margin-bottom:8px; }
+  .modal-sub { font-size:13px; color:var(--muted); margin-bottom:20px; line-height:1.6; }
+  .modal-input { width:100%; padding:10px 14px; border:1.5px solid var(--border); border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:14px; outline:none; transition:border-color 0.2s; }
+  .modal-input:focus { border-color:var(--sky); box-shadow:0 0 0 3px rgba(59,158,221,0.12); }
+  .modal-btns { display:flex; gap:10px; margin-top:16px; justify-content:flex-end; }
 
   /* ── TAGS ── */
   .tag { display:inline-block; font-size:11px; font-weight:600; padding:2px 8px; border-radius:4px; white-space:nowrap; }
@@ -325,10 +335,7 @@
             <div class="field-row">
               <div class="field">
                 <label>일정 <span class="req">*</span></label>
-                <select id="promo-schedule">
-                  <option value="">선택</option>
-                  {% for s in schedule_options %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
-                </select>
+                <input type="date" id="promo-schedule">
               </div>
               <div class="field">
                 <label>구분 <span class="req">*</span></label>
@@ -475,10 +482,7 @@
             <div class="field-row">
               <div class="field">
                 <label>일정 <span class="req">*</span></label>
-                <select id="tasting-schedule">
-                  <option value="">선택</option>
-                  {% for s in schedule_options %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
-                </select>
+                <input type="date" id="tasting-schedule">
               </div>
               <div class="field">
                 <label>구분 <span class="req">*</span></label>
@@ -599,12 +603,29 @@
 </div>
 <div id="toast"></div>
 
+<!-- ── 관리자 인증 모달 ── -->
+<div class="modal-overlay hidden" id="adminModal" onclick="if(event.target===this)closeAdminModal()">
+  <div class="modal-box">
+    <div class="modal-title">🔒 관리자 인증</div>
+    <div class="modal-sub">삭제 기능은 관리자만 사용할 수 있습니다.<br>비밀번호를 입력해주세요.</div>
+    <input class="modal-input" type="password" id="adminPwInput" placeholder="비밀번호 입력"
+           onkeydown="if(event.key==='Enter')submitAdminPw()">
+    <div class="modal-btns">
+      <button class="btn btn-outline" onclick="closeAdminModal()">취소</button>
+      <button class="btn btn-primary" onclick="submitAdminPw()">확인</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ── 상태 ──────────────────────────────────────────────────
 const state = {
   promo:   { entries: [], allData: [] },
   tasting: { entries: [], allData: [] }
 };
+let isAdmin = false;
+let pendingDeleteId = null;
+let pendingDeleteSection = null;
 
 // nav 아이템 목록 (패널별)
 const NAV_MAP = {
@@ -749,9 +770,48 @@ function resetFilters(section) {
 }
 
 async function deleteEntry(id, section) {
+  if (!isAdmin) {
+    pendingDeleteId = id;
+    pendingDeleteSection = section;
+    openAdminModal();
+    return;
+  }
   if (!confirm('이 항목을 삭제하시겠습니까?')) return;
   const res = await fetch(`/api/delete/${id}`, { method:'DELETE' });
-  if ((await res.json()).success) { showToast('삭제되었습니다.', 'success'); loadAllData(section); }
+  const data = await res.json();
+  if (data.success) { showToast('삭제되었습니다.', 'success'); loadAllData(section); }
+  else showToast(data.message || '삭제에 실패했습니다.', 'error');
+}
+
+function openAdminModal() {
+  document.getElementById('adminModal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('adminPwInput').focus(), 50);
+}
+
+function closeAdminModal() {
+  document.getElementById('adminModal').classList.add('hidden');
+  pendingDeleteId = null;
+  pendingDeleteSection = null;
+}
+
+async function submitAdminPw() {
+  const pw = document.getElementById('adminPwInput').value;
+  const res = await fetch('/api/auth', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: pw })
+  });
+  if (res.ok) {
+    isAdmin = true;
+    const did = pendingDeleteId;
+    const sid = pendingDeleteSection;
+    closeAdminModal();
+    showToast('관리자 인증 완료!', 'success');
+    if (did) deleteEntry(did, sid);
+  } else {
+    showToast('비밀번호가 올바르지 않습니다.', 'error');
+    document.getElementById('adminPwInput').select();
+  }
 }
 
 // ── 폼 기능 ───────────────────────────────────────────────
@@ -767,7 +827,7 @@ function addEntry(section) {
 
   if (!team)     return showToast('담당팀을 선택해주세요.', 'error');
   if (!name)     return showToast('담당자 이름을 입력해주세요.', 'error');
-  if (!schedule) return showToast('일정을 선택해주세요.', 'error');
+  if (!schedule) return showToast('일정을 입력해주세요.', 'error');
   if (!category) return showToast('구분을 선택해주세요.', 'error');
   if (!product)  return showToast('제품명을 입력해주세요.', 'error');
 
