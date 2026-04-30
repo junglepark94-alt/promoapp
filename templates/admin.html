@@ -259,7 +259,7 @@
 <body>
 
 <header>
-  <a class="logo" href="/" style="text-decoration:none">
+  <a class="logo" href="/admin" style="text-decoration:none" onclick="if(document.getElementById('dashboard')&&document.getElementById('dashboard').style.display!=='none'){event.preventDefault();switchSection('promo');window.scrollTo(0,0);}">
     <img src="/static/favicon.ico" alt="빙그레">
     프로모션 일정 취합 — 관리자
   </a>
@@ -355,18 +355,6 @@
 
     <!-- 콘텐츠 캘린더 섹션 -->
     <div id="contentSection" style="display:none">
-      <div style="font-size:14px;font-weight:700;color:#0d9488;margin-bottom:12px">등록된 콘텐츠 일정</div>
-      <div class="table-wrap">
-        <table class="teal-table">
-          <thead class="teal-thead"><tr>
-            <th class="col-no col-hide-mob">#</th><th>일정</th><th>구분</th><th>제목 / 제품명</th><th class="col-hide-mob">비고</th><th class="col-hide-mob">등록일</th><th>수정/삭제</th>
-          </tr></thead>
-          <tbody id="contentTableBody">
-            <tr class="empty-row"><td colspan="7">등록된 항목이 없습니다.</td></tr>
-          </tbody>
-        </table>
-      </div>
-
       <!-- 콘텐츠 캘린더 뷰 -->
       <div class="admin-cal-wrap" id="adminCalWrap" style="display:none">
         <div class="admin-cal-header">
@@ -379,6 +367,18 @@
         <div class="admin-cal-body">
           <div class="admin-cal-grid" id="adminCalGrid"></div>
         </div>
+      </div>
+
+      <div style="font-size:14px;font-weight:700;color:#0d9488;margin:20px 0 12px">등록된 콘텐츠 일정</div>
+      <div class="table-wrap">
+        <table class="teal-table">
+          <thead class="teal-thead"><tr>
+            <th class="col-no col-hide-mob">#</th><th>일정</th><th>구분</th><th>제목 / 제품명</th><th class="col-hide-mob">비고</th><th class="col-hide-mob">등록일</th><th>수정/삭제</th>
+          </tr></thead>
+          <tbody id="contentTableBody">
+            <tr class="empty-row"><td colspan="7">등록된 항목이 없습니다.</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
