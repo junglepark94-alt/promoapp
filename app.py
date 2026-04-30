@@ -20,7 +20,7 @@ TEAMS = [
 
 CATEGORIES         = ["신제품", "리뉴얼", "프로모션", "박람회", "기타"]
 TASTING_CATEGORIES = ["신제품", "리뉴얼", "기타"]
-CONTENT_CATEGORIES = ["국내 인스타그램", "글로벌 인스타그램", "국내 틱톡", "글로벌 틱톡", "글로벌 유튜브"]
+CONTENT_CATEGORIES = ["국내 인스타그램", "글로벌 인스타그램", "국내 틱톡", "글로벌 틱톡", "글로벌 유튜브", "신제품 체험단"]
 TASTING_TEAMS      = [t for t in TEAMS if t not in ("해외", "콘텐츠전략팀")]
 
 EDITABLE_FIELDS = ["team", "name", "schedule", "category", "product", "note"]
