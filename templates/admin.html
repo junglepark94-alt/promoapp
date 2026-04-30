@@ -146,9 +146,6 @@
   .modal-btns { display:flex; justify-content:flex-end; margin-top:16px; }
 
   /* CONTENT */
-  .content-card { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:20px; }
-  .content-card-header { background:linear-gradient(90deg,#0d9488,#0f766e); padding:13px 20px; }
-  .content-card-header h3 { color:white; font-size:14px; font-weight:600; }
   .content-form { padding:20px; display:grid; grid-template-columns:1fr 1fr; gap:14px; }
   .content-form .field { display:flex; flex-direction:column; gap:5px; }
   .content-form .field.full { grid-column:1/-1; }
@@ -358,37 +355,6 @@
 
     <!-- 콘텐츠 캘린더 섹션 -->
     <div id="contentSection" style="display:none">
-      <div class="content-card">
-        <div class="content-card-header"><h3>콘텐츠 일정 등록</h3></div>
-        <div class="content-form">
-          <div class="field">
-            <label>시작일 *</label>
-            <input type="date" id="c-start" onclick="try{this.showPicker()}catch(e){}">
-          </div>
-          <div class="field">
-            <label>마감일</label>
-            <input type="date" id="c-end" onclick="try{this.showPicker()}catch(e){}">
-          </div>
-          <div class="field">
-            <label>구분 *</label>
-            <select id="c-category">
-              <option value="">선택</option>
-              {% for c in content_categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
-            </select>
-          </div>
-          <div class="field">
-            <label>제목 / 제품명 *</label>
-            <input type="text" id="c-product" placeholder="예) 빵또아 SNS 릴스">
-          </div>
-          <div class="field full">
-            <label>비고</label>
-            <textarea id="c-note" placeholder="세부 내용, 플랫폼, 담당자 등"></textarea>
-          </div>
-          <div class="field full" style="margin-top:0">
-            <button class="btn btn-success" style="align-self:flex-start" onclick="addContentEntry()">＋ 등록</button>
-          </div>
-        </div>
-      </div>
       <div style="font-size:14px;font-weight:700;color:#0d9488;margin-bottom:12px">등록된 콘텐츠 일정</div>
       <div class="table-wrap">
         <table class="teal-table">
@@ -719,31 +685,6 @@ async function loadContentData() {
   renderContentTable();
   document.getElementById('adminCalWrap').style.display = 'block';
   renderAdminCal();
-}
-
-async function addContentEntry() {
-  const start    = document.getElementById('c-start').value;
-  const end      = document.getElementById('c-end').value;
-  const category = document.getElementById('c-category').value;
-  const product  = document.getElementById('c-product').value.trim();
-  const note     = document.getElementById('c-note').value.trim();
-  if (!start) return showToast('시작일을 입력하세요.', 'error');
-  if (!category) return showToast('구분을 선택하세요.', 'error');
-  if (!product) return showToast('제목을 입력하세요.', 'error');
-  const res  = await fetch('/api/content/add', {
-    method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ start, end, category, product, note })
-  });
-  const data = await res.json();
-  if (data.success) {
-    showToast('등록 완료!', 'success');
-    document.getElementById('c-start').value    = '';
-    document.getElementById('c-end').value      = '';
-    document.getElementById('c-category').value = '';
-    document.getElementById('c-product').value  = '';
-    document.getElementById('c-note').value     = '';
-    loadContentData();
-  } else { showToast(data.message || '등록 실패', 'error'); }
 }
 
 async function deleteContent(id) {
