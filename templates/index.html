@@ -913,7 +913,7 @@
         <!-- 범례 -->
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center">
           <span style="font-size:11px;font-weight:700;color:var(--muted)">구분</span>
-          {% set cc = [('SNS','#e11d48'),('영상','#7c3aed'),('이벤트','#0284c7'),('블로그','#059669'),('기타','#6b7280')] %}
+          {% set cc = [('국내 인스타그램','#e11d48'),('글로벌 인스타그램','#f97316'),('국내 틱톡','#7c3aed'),('글로벌 틱톡','#0284c7'),('글로벌 유튜브','#dc2626')] %}
           {% for label, color in cc %}
           <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:{{ color }}22;color:{{ color }};border:1px solid {{ color }}55">
             <span style="width:8px;height:8px;border-radius:50%;background:{{ color }};flex-shrink:0"></span>{{ label }}
@@ -1567,7 +1567,7 @@ async function submitAll(section) {
 
 // ── 콘텐츠 캘린더 ─────────────────────────────────────────
 const CONTENT_COLORS = {
-  'SNS':'#e11d48','영상':'#7c3aed','이벤트':'#0284c7','블로그':'#059669','기타':'#6b7280'
+  '국내 인스타그램':'#e11d48','글로벌 인스타그램':'#f97316','국내 틱톡':'#7c3aed','글로벌 틱톡':'#0284c7','글로벌 유튜브':'#dc2626'
 };
 function getContentColor(cat) { return CONTENT_COLORS[cat] || '#0d9488'; }
 

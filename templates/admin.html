@@ -283,11 +283,11 @@
         <div class="content-form">
           <div class="field">
             <label>시작일 *</label>
-            <input type="date" id="c-start">
+            <input type="date" id="c-start" onclick="try{this.showPicker()}catch(e){}">
           </div>
           <div class="field">
             <label>마감일</label>
-            <input type="date" id="c-end">
+            <input type="date" id="c-end" onclick="try{this.showPicker()}catch(e){}">
           </div>
           <div class="field">
             <label>구분 *</label>
@@ -377,7 +377,7 @@ async function doLogin() {
 
 // ── 섹션 전환 ─────────────────────────────────────────────
 const CONTENT_COLORS_ADMIN = {
-  'SNS':'#e11d48','영상':'#7c3aed','이벤트':'#0284c7','블로그':'#059669','기타':'#6b7280'
+  '국내 인스타그램':'#e11d48','글로벌 인스타그램':'#f97316','국내 틱톡':'#7c3aed','글로벌 틱톡':'#0284c7','글로벌 유튜브':'#dc2626'
 };
 function getContentColor(cat) { return CONTENT_COLORS_ADMIN[cat] || '#0d9488'; }
 
