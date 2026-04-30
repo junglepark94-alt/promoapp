@@ -606,7 +606,7 @@ function renderTable(data) {
       : '<span style="color:var(--muted);font-size:12px">—</span>';
     const appBtn = d.approved
       ? `<button class="btn btn-sm btn-warn" onclick="toggleApprove('${d.id}',false)">승인취소</button>`
-      : `<button class="btn btn-sm btn-success" onclick="toggleApprove('${d.id}',true)">승인</button>`;
+      : `<button class="btn btn-sm btn-success" onclick="toggleApprove('${d.id}',true)">승인하기</button>`;
     return `
       <tr class="${d.approved ? 'approved-row' : ''}">
         <td class="col-no col-hide-mob">${i+1}</td>
