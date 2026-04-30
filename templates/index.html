@@ -375,7 +375,7 @@
         팀별 일정 확인 <span class="nav-arrow">▾</span>
       </button>
       <div class="nav-dropdown" id="tasting-teamDropdown">
-        {% for t in teams %}
+        {% for t in tasting_teams %}
         <button class="nav-sub-item" data-team="{{ t }}" onclick="selectTeam('tasting', this.dataset.team)">{{ t }}</button>
         {% endfor %}
       </div>
@@ -800,7 +800,7 @@ function renderDateTabs(section, ctx) {
   const mo    = state[section].month;
 
   const dataYears = data.map(d => { const ym = parseScheduleYM(d.schedule); return ym ? ym.year : null; }).filter(Boolean);
-  const years = [...new Set(ctx === 'all' ? ['2026', ...dataYears] : dataYears)].sort();
+  const years = [...new Set(['2026', ...dataYears])].sort();
 
   const yearEl  = document.getElementById(`${section}-${ctx}-yearTabs`);
   const monthEl = document.getElementById(`${section}-${ctx}-monthTabs`);
