@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>프로모션 일정 취합 시스템</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0f1f3d;
+    --blue: #1a5bb7;
+    --sky: #3b9edd;
+    --accent: #e8f4fd;
+    --border: #d0e3f4;
+    --text: #1a2840;
+    --muted: #6b87a8;
+    --success: #16a34a;
+    --danger: #dc2626;
+    --bg: #f4f8fd;
+    --white: #ffffff;
+    --card: #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* HEADER */
+  header {
+    background: var(--navy);
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+  }
+  .logo { display: flex; align-items: center; gap: 10px; color: white; font-size: 15px; font-weight: 700; letter-spacing: -0.3px; }
+  .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--sky), var(--blue)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+
+  /* LAYOUT */
+  .app-layout { display: grid; grid-template-columns: 210px 1fr; min-height: calc(100vh - 60px); }
+
+  /* SIDEBAR */
+  .sidebar {
+    background: var(--white);
+    border-right: 1px solid var(--border);
+    padding: 18px 10px;
+    position: sticky;
+    top: 60px;
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+  }
+  .sidebar-label {
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding: 0 10px;
+    margin-bottom: 10px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.12s;
+    text-align: left;
+    margin-bottom: 2px;
+  }
+  .nav-item:hover { background: var(--accent); color: var(--text); }
+  .nav-item.active { background: var(--navy); color: white; }
+  .nav-arrow { font-size: 10px; transition: transform 0.2s; opacity: 0.6; }
+  .nav-item.open .nav-arrow { transform: rotate(180deg); }
+  .nav-dropdown { display: none; margin: 2px 0 4px; }
+  .nav-dropdown.open { display: block; }
+  .nav-sub-item {
+    display: block;
+    width: 100%;
+    padding: 7px 12px 7px 26px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.12s;
+    text-align: left;
+    margin-bottom: 1px;
+  }
+  .nav-sub-item:hover { background: var(--accent); color: var(--text); }
+  .nav-sub-item.active { background: var(--accent); color: var(--navy); font-weight: 600; }
+
+  /* PANELS */
+  .panel { display: none; padding: 32px; }
+  .panel.active { display: block; }
+  .panel-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .panel-title { font-size: 20px; font-weight: 700; color: var(--navy); }
+  .panel-sub { font-size: 13px; color: var(--muted); margin-top: 4px; line-height: 1.6; }
+
+  /* CARD */
+  .card { background: var(--card); border-radius: 14px; border: 1px solid var(--border); box-shadow: 0 2px 16px rgba(15,31,61,0.07); overflow: hidden; margin-bottom: 20px; }
+  .card-header { background: linear-gradient(90deg, var(--navy) 0%, #1e3a6e 100%); padding: 16px 24px; display: flex; align-items: center; gap: 10px; }
+  .card-header h2 { color: white; font-size: 14px; font-weight: 600; }
+  .step-badge { background: rgba(255,255,255,0.18); color: white; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 20px; font-family: 'DM Mono', monospace; }
+  .card-body { padding: 24px; }
+
+  /* FORM */
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.3px; text-transform: uppercase; }
+  .field select, .field input, .field textarea {
+    width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px;
+    font-family: 'Noto Sans KR', sans-serif; font-size: 13.5px; color: var(--text);
+    background: var(--white); transition: border-color 0.2s, box-shadow 0.2s; outline: none; -webkit-appearance: none;
+  }
+  .field select:focus, .field input:focus, .field textarea:focus { border-color: var(--sky); box-shadow: 0 0 0 3px rgba(59,158,221,0.12); }
+  .field select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b87a8' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+  .field textarea { resize: vertical; min-height: 72px; line-height: 1.6; }
+  .req { color: var(--danger); font-size: 10px; margin-left: 2px; }
+
+  /* ENTRIES */
+  .entries-label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .entry-count { background: var(--blue); color: white; font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 20px; font-family: 'DM Mono', monospace; }
+  .entry-item { background: var(--accent); border: 1.5px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: flex-start; gap: 14px; animation: slideIn 0.25s ease; }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+  .entry-num { min-width: 26px; height: 26px; background: var(--navy); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; font-family: 'DM Mono', monospace; margin-top: 1px; }
+  .entry-content { flex: 1; }
+  .entry-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 5px; }
+  .entry-product { font-size: 13.5px; font-weight: 600; color: var(--navy); line-height: 1.4; }
+  .entry-note { font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+  .entry-del { background: none; border: 1.5px solid #fca5a5; color: var(--danger); cursor: pointer; border-radius: 6px; padding: 4px 8px; font-size: 12px; transition: all 0.15s; white-space: nowrap; }
+  .entry-del:hover { background: #fee2e2; }
+
+  /* BUTTONS */
+  .btn { padding: 9px 18px; border-radius: 8px; font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.18s; border: none; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+  .btn-primary { background: var(--blue); color: white; box-shadow: 0 2px 8px rgba(26,91,183,0.22); }
+  .btn-primary:hover { background: #1550a0; transform: translateY(-1px); }
+  .btn-outline { background: white; color: var(--blue); border: 1.5px solid var(--border); }
+  .btn-outline:hover { border-color: var(--sky); background: var(--accent); }
+  .btn-success { background: var(--success); color: white; box-shadow: 0 2px 8px rgba(22,163,74,0.22); }
+  .btn-success:hover { background: #15803d; transform: translateY(-1px); }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+  .btn-row { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+
+  /* TAGS */
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
+  .tag-schedule { background: #dbeafe; color: #1d4ed8; }
+  .tag-cat { background: #dcfce7; color: #15803d; }
+  .tag-신제품 { background: #dbeafe; color: #1d4ed8; }
+  .tag-리뉴얼 { background: #f3e8ff; color: #7e22ce; }
+  .tag-프로모션 { background: #dcfce7; color: #15803d; }
+  .tag-박람회 { background: #fff7ed; color: #c2410c; }
+
+  /* DIVIDER */
+  .divider { border: none; border-top: 1.5px dashed var(--border); margin: 24px 0; }
+
+  /* STATS */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+  .stat-num { font-size: 28px; font-weight: 700; color: var(--blue); font-family: 'DM Mono', monospace; line-height: 1; }
+  .stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* FILTERS */
+  .filters { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; }
+  .filter-group { display: flex; flex-direction: column; gap: 5px; }
+  .filter-group label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+  .filter-group select, .filter-group input { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-family: 'Noto Sans KR', sans-serif; font-size: 13px; color: var(--text); background: var(--white); outline: none; transition: border-color 0.2s; min-width: 130px; }
+  .filter-group select:focus, .filter-group input:focus { border-color: var(--sky); }
+
+  /* TABLE */
+  .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: 0 2px 12px rgba(15,31,61,0.06); }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { background: linear-gradient(90deg, var(--navy) 0%, #1e3a6e 100%); }
+  thead th { padding: 13px 14px; font-size: 12px; font-weight: 700; color: white; text-align: left; white-space: nowrap; letter-spacing: 0.3px; }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #f0f7ff; }
+  tbody td { padding: 12px 14px; font-size: 13px; vertical-align: top; line-height: 1.5; }
+  .col-no { color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; width: 36px; }
+  .col-schedule { white-space: nowrap; font-weight: 600; color: var(--blue); }
+  .col-team { white-space: nowrap; }
+  .col-product { font-weight: 500; max-width: 220px; }
+  .col-note { color: var(--muted); font-size: 12px; max-width: 260px; }
+  .col-ts { color: var(--muted); font-size: 11px; white-space: nowrap; font-family: 'DM Mono', monospace; }
+  .del-btn { background: none; border: 1px solid #fca5a5; color: var(--danger); cursor: pointer; border-radius: 5px; padding: 3px 8px; font-size: 11px; font-family: 'Noto Sans KR', sans-serif; transition: all 0.15s; }
+  .del-btn:hover { background: #fee2e2; }
+  .empty-row td { text-align: center; padding: 48px; color: var(--muted); font-size: 14px; }
+
+  /* EMPTY */
+  .empty-state { text-align: center; padding: 32px 16px; color: var(--muted); font-size: 13px; border: 1.5px dashed var(--border); border-radius: 10px; background: var(--accent); }
+  .empty-state .icon { font-size: 28px; margin-bottom: 8px; }
+
+  /* TOAST */
+  #toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px); padding: 12px 28px; border-radius: 10px; font-size: 14px; font-weight: 600; color: white; opacity: 0; transition: all 0.3s; z-index: 999; pointer-events: none; }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast.success { background: var(--success); }
+  #toast.error { background: var(--danger); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">📋</div>
+    프로모션 일정 취합 시스템
+  </div>
+</header>
+
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-label">메뉴</div>
+
+    <button class="nav-item active" id="nav-form" onclick="showPanel('form')">
+      프로모션 일정 입력
+    </button>
+
+    <div>
+      <button class="nav-item" id="nav-team-toggle" onclick="toggleTeamDropdown()">
+        팀별 일정 확인
+        <span class="nav-arrow">▾</span>
+      </button>
+      <div class="nav-dropdown" id="teamDropdown">
+        {% for t in teams %}
+        <button class="nav-sub-item" data-team="{{ t }}" onclick="selectTeam(this.dataset.team)">{{ t }}</button>
+        {% endfor %}
+      </div>
+    </div>
+
+    <button class="nav-item" id="nav-all" onclick="showPanel('all')">
+      전체 일정 확인
+    </button>
+  </aside>
+
+  <main>
+
+    <!-- PANEL: 프로모션 일정 입력 -->
+    <section class="panel active" id="panel-form">
+      <div style="max-width:820px; margin:0 auto; padding-bottom:60px">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">프로모션 일정 입력</div>
+            <div class="panel-sub">담당팀과 담당자 정보를 입력하고, 일정 항목을 하나씩 추가한 뒤 한 번에 제출하세요.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="step-badge">STEP 1</span>
+            <h2>기본 정보 입력</h2>
+          </div>
+          <div class="card-body">
+            <div class="field-row">
+              <div class="field">
+                <label>담당팀 <span class="req">*</span></label>
+                <select id="team">
+                  <option value="">팀 선택</option>
+                  {% for t in teams %}
+                  <option value="{{ t }}">{{ t }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="field">
+                <label>담당자 이름 <span class="req">*</span></label>
+                <input type="text" id="name" placeholder="예) 홍길동">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="step-badge">STEP 2</span>
+            <h2>일정 항목 추가</h2>
+          </div>
+          <div class="card-body">
+            <div class="field-row">
+              <div class="field">
+                <label>일정 <span class="req">*</span></label>
+                <select id="schedule">
+                  <option value="">선택</option>
+                  {% for s in schedule_options %}
+                  <option value="{{ s }}">{{ s }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="field">
+                <label>구분 <span class="req">*</span></label>
+                <select id="category">
+                  <option value="">선택</option>
+                  {% for c in categories %}
+                  <option value="{{ c }}">{{ c }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="field" style="margin-bottom:14px">
+              <label>제품명 / 행사명 <span class="req">*</span></label>
+              <input type="text" id="product" placeholder="예) 빵또아 블루베리 크림치즈">
+            </div>
+            <div class="field">
+              <label>비고 (선택)</label>
+              <textarea id="note" placeholder="세부 내용, 날짜 확정 여부, 판촉물 등 추가 정보를 입력하세요"></textarea>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-outline" onclick="addEntry()">＋ 항목 추가</button>
+            </div>
+            <hr class="divider">
+            <div class="entries-label">
+              추가된 항목
+              <span class="entry-count" id="entryCount">0</span>
+            </div>
+            <div id="entriesList">
+              <div class="empty-state">
+                <div class="icon">📝</div>
+                아직 추가된 항목이 없습니다.<br>위에서 정보를 입력하고 [항목 추가]를 눌러주세요.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="step-badge">STEP 3</span>
+            <h2>최종 제출</h2>
+          </div>
+          <div class="card-body">
+            <p style="font-size:13px; color:var(--muted); margin-bottom:18px; line-height:1.7">
+              항목 추가가 완료되면 아래 <strong>제출하기</strong> 버튼을 눌러주세요.<br>
+              제출된 데이터는 [전체 일정 확인]에서 확인 및 엑셀로 다운로드할 수 있습니다.
+            </p>
+            <button class="btn btn-success" id="submitBtn" onclick="submitAll()" disabled>
+              ✓ 제출하기
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL: 팀별 일정 확인 -->
+    <section class="panel" id="panel-team">
+      <div style="padding-bottom:60px">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title" id="teamPanelTitle">팀별 일정 확인</div>
+            <div class="panel-sub" id="teamPanelSub">좌측 메뉴에서 팀을 선택하세요.</div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="col-no">#</th>
+                <th>일정</th>
+                <th>담당자</th>
+                <th>구분</th>
+                <th>제품명 / 행사명</th>
+                <th>비고</th>
+                <th>제출시각</th>
+              </tr>
+            </thead>
+            <tbody id="teamTableBody">
+              <tr class="empty-row"><td colspan="7">좌측 메뉴에서 팀을 선택하세요.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL: 전체 일정 확인 -->
+    <section class="panel" id="panel-all">
+      <div style="padding-bottom:60px">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">전체 일정 확인</div>
+            <div class="panel-sub">모든 팀의 제출 현황을 확인하고 엑셀로 다운로드할 수 있습니다.</div>
+          </div>
+          <div style="display:flex; gap:10px; flex-shrink:0">
+            <button class="btn btn-outline" onclick="loadAllData()">↻ 새로고침</button>
+            <a href="/export" class="btn btn-primary">⬇ 엑셀 다운로드</a>
+          </div>
+        </div>
+
+        <div class="stats" id="statsArea"></div>
+
+        <div class="filters">
+          <div class="filter-group">
+            <label>담당팀</label>
+            <select id="filterTeam" onchange="applyFilter()">
+              <option value="">전체</option>
+              {% for t in teams %}
+              <option value="{{ t }}">{{ t }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>구분</label>
+            <select id="filterCat" onchange="applyFilter()">
+              <option value="">전체</option>
+              {% for c in categories %}
+              <option value="{{ c }}">{{ c }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>검색</label>
+            <input type="text" id="filterSearch" placeholder="제품명 검색..." oninput="applyFilter()">
+          </div>
+          <button class="btn btn-outline" onclick="resetFilters()">초기화</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="col-no">#</th>
+                <th>일정</th>
+                <th>담당팀</th>
+                <th>담당자</th>
+                <th>구분</th>
+                <th>제품명 / 행사명</th>
+                <th>비고</th>
+                <th>제출시각</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="allTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script>
+let entries = [];
+let allData = [];
+
+// ── 패널 전환 ─────────────────────────────────
+function showPanel(panelId) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + panelId).classList.add('active');
+
+  document.getElementById('nav-form').classList.remove('active');
+  document.getElementById('nav-all').classList.remove('active');
+  document.getElementById('nav-team-toggle').classList.remove('active');
+
+  if (panelId === 'form') document.getElementById('nav-form').classList.add('active');
+  if (panelId === 'all')  { document.getElementById('nav-all').classList.add('active'); loadAllData(); }
+}
+
+// ── 팀 드롭다운 ───────────────────────────────
+function toggleTeamDropdown() {
+  document.getElementById('teamDropdown').classList.toggle('open');
+  document.getElementById('nav-team-toggle').classList.toggle('open');
+}
+
+function selectTeam(team) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-team').classList.add('active');
+
+  document.getElementById('nav-form').classList.remove('active');
+  document.getElementById('nav-all').classList.remove('active');
+  document.getElementById('nav-team-toggle').classList.add('active');
+
+  // 드롭다운이 닫혀 있으면 열기
+  document.getElementById('teamDropdown').classList.add('open');
+  document.getElementById('nav-team-toggle').classList.add('open');
+
+  document.querySelectorAll('.nav-sub-item').forEach(b => {
+    b.classList.toggle('active', b.dataset.team === team);
+  });
+
+  document.getElementById('teamPanelTitle').textContent = team + ' 일정';
+  document.getElementById('teamPanelSub').textContent = team + '의 제출 현황입니다.';
+  loadTeamData(team);
+}
+
+// ── 팀별 데이터 ───────────────────────────────
+async function loadTeamData(team) {
+  const res  = await fetch('/api/data?team=' + encodeURIComponent(team));
+  const data = await res.json();
+  const tbody = document.getElementById('teamTableBody');
+  if (!data.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="7">📭 제출된 항목이 없습니다.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = data.map((d, i) => `
+    <tr>
+      <td class="col-no">${i + 1}</td>
+      <td class="col-schedule">${esc(d.schedule)}</td>
+      <td>${esc(d.name)}</td>
+      <td><span class="tag tag-${d.category}">${esc(d.category)}</span></td>
+      <td class="col-product">${esc(d.product)}</td>
+      <td class="col-note">${esc(d.note || '')}</td>
+      <td class="col-ts">${esc(d.submitted_at || '')}</td>
+    </tr>
+  `).join('');
+}
+
+// ── 전체 데이터 ───────────────────────────────
+async function loadAllData() {
+  const res = await fetch('/api/data');
+  allData   = await res.json();
+  renderStats();
+  applyFilter();
+}
+
+function renderStats() {
+  const total = allData.length;
+  const teams = new Set(allData.map(d => d.team)).size;
+  const cats  = {};
+  allData.forEach(d => { cats[d.category] = (cats[d.category] || 0) + 1; });
+  document.getElementById('statsArea').innerHTML = `
+    <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">총 항목 수</div></div>
+    <div class="stat-card"><div class="stat-num">${teams}</div><div class="stat-label">제출 팀 수</div></div>
+    <div class="stat-card"><div class="stat-num">${cats['신제품']  || 0}</div><div class="stat-label">신제품</div></div>
+    <div class="stat-card"><div class="stat-num">${cats['리뉴얼']  || 0}</div><div class="stat-label">리뉴얼</div></div>
+    <div class="stat-card"><div class="stat-num">${cats['프로모션'] || 0}</div><div class="stat-label">프로모션</div></div>
+    <div class="stat-card"><div class="stat-num">${cats['박람회']  || 0}</div><div class="stat-label">박람회</div></div>
+  `;
+}
+
+function applyFilter() {
+  const team   = document.getElementById('filterTeam').value;
+  const cat    = document.getElementById('filterCat').value;
+  const search = document.getElementById('filterSearch').value.toLowerCase();
+  const filtered = allData.filter(d => {
+    if (team   && d.team     !== team) return false;
+    if (cat    && d.category !== cat)  return false;
+    if (search && !d.product.toLowerCase().includes(search) &&
+        !(d.note || '').toLowerCase().includes(search)) return false;
+    return true;
+  });
+  const tbody = document.getElementById('allTableBody');
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="9">📭 해당하는 항목이 없습니다.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map((d, i) => `
+    <tr>
+      <td class="col-no">${i + 1}</td>
+      <td class="col-schedule">${esc(d.schedule)}</td>
+      <td class="col-team">${esc(d.team)}</td>
+      <td>${esc(d.name)}</td>
+      <td><span class="tag tag-${d.category}">${esc(d.category)}</span></td>
+      <td class="col-product">${esc(d.product)}</td>
+      <td class="col-note">${esc(d.note || '')}</td>
+      <td class="col-ts">${esc(d.submitted_at || '')}</td>
+      <td><button class="del-btn" onclick="deleteEntry('${d.id}')">삭제</button></td>
+    </tr>
+  `).join('');
+}
+
+function resetFilters() {
+  document.getElementById('filterTeam').value  = '';
+  document.getElementById('filterCat').value   = '';
+  document.getElementById('filterSearch').value = '';
+  applyFilter();
+}
+
+async function deleteEntry(id) {
+  if (!confirm('이 항목을 삭제하시겠습니까?')) return;
+  const res  = await fetch(`/api/delete/${id}`, { method: 'DELETE' });
+  const data = await res.json();
+  if (data.success) { showToast('삭제되었습니다.', 'success'); loadAllData(); }
+}
+
+// ── 일정 입력 폼 ─────────────────────────────
+function getVal(id) { return document.getElementById(id).value.trim(); }
+
+function addEntry() {
+  const team     = getVal('team');
+  const name     = getVal('name');
+  const schedule = getVal('schedule');
+  const category = getVal('category');
+  const product  = getVal('product');
+  const note     = getVal('note');
+
+  if (!team)     return showToast('담당팀을 선택해주세요.', 'error');
+  if (!name)     return showToast('담당자 이름을 입력해주세요.', 'error');
+  if (!schedule) return showToast('일정을 선택해주세요.', 'error');
+  if (!category) return showToast('구분을 선택해주세요.', 'error');
+  if (!product)  return showToast('제품명/행사명을 입력해주세요.', 'error');
+
+  entries.push({ team, name, schedule, category, product, note });
+  renderEntries();
+  document.getElementById('product').value = '';
+  document.getElementById('note').value    = '';
+  document.getElementById('product').focus();
+  showToast('항목이 추가되었습니다!', 'success');
+}
+
+function removeEntry(idx) { entries.splice(idx, 1); renderEntries(); }
+
+function renderEntries() {
+  const list  = document.getElementById('entriesList');
+  const count = document.getElementById('entryCount');
+  count.textContent = entries.length;
+  document.getElementById('submitBtn').disabled = entries.length === 0;
+  if (!entries.length) {
+    list.innerHTML = `<div class="empty-state"><div class="icon">📝</div>아직 추가된 항목이 없습니다.<br>위에서 정보를 입력하고 [항목 추가]를 눌러주세요.</div>`;
+    return;
+  }
+  list.innerHTML = entries.map((e, i) => `
+    <div class="entry-item">
+      <div class="entry-num">${i + 1}</div>
+      <div class="entry-content">
+        <div class="entry-meta">
+          <span class="tag tag-schedule">${e.schedule}</span>
+          <span class="tag tag-cat">${e.category}</span>
+        </div>
+        <div class="entry-product">${escHtml(e.product)}</div>
+        ${e.note ? `<div class="entry-note">${escHtml(e.note)}</div>` : ''}
+      </div>
+      <button class="entry-del" onclick="removeEntry(${i})">✕ 삭제</button>
+    </div>
+  `).join('');
+}
+
+async function submitAll() {
+  if (!entries.length) return;
+  const btn = document.getElementById('submitBtn');
+  btn.disabled    = true;
+  btn.textContent = '제출 중...';
+  try {
+    const res  = await fetch('/api/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ entries })
+    });
+    const data = await res.json();
+    if (data.success) { entries = []; renderEntries(); showToast(data.message, 'success'); }
+    else showToast(data.message || '오류가 발생했습니다.', 'error');
+  } catch(e) { showToast('서버 오류가 발생했습니다.', 'error'); }
+  btn.textContent = '✓ 제출하기';
+  btn.disabled    = entries.length === 0;
+}
+
+// ── 유틸 ──────────────────────────────────────
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function escHtml(s) { return esc(s); }
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className   = `show ${type}`;
+  setTimeout(() => { t.className = ''; }, 2800);
+}
+
+document.getElementById('product').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); addEntry(); }
+});
+</script>
+</body>
+</html>
