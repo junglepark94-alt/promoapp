@@ -597,10 +597,10 @@
         <div class="table-wrap">
           <table>
             <thead><tr>
-              <th class="col-no">#</th><th>일정</th><th>담당자</th><th>구분</th><th>제품명 / 행사명</th><th>비고</th><th>제출시각</th><th>승인여부</th>
+              <th class="col-no">#</th><th>일정</th><th>담당자</th><th>구분</th><th>제품명 / 행사명</th><th>비고</th><th>제출시각</th><th>승인여부</th><th>수정/삭제</th>
             </tr></thead>
             <tbody id="promo-teamTableBody">
-              <tr class="empty-row"><td colspan="8">좌측 메뉴에서 팀을 선택하세요.</td></tr>
+              <tr class="empty-row"><td colspan="9">좌측 메뉴에서 팀을 선택하세요.</td></tr>
             </tbody>
           </table>
         </div>
@@ -827,10 +827,10 @@
         <div class="table-wrap">
           <table>
             <thead><tr class="purple">
-              <th class="col-no">#</th><th>일정</th><th>담당자</th><th>구분</th><th>제품명</th><th>비고</th><th>제출시각</th><th>승인여부</th>
+              <th class="col-no">#</th><th>일정</th><th>담당자</th><th>구분</th><th>제품명</th><th>비고</th><th>제출시각</th><th>승인여부</th><th>수정/삭제</th>
             </tr></thead>
             <tbody id="tasting-teamTableBody">
-              <tr class="empty-row"><td colspan="8">좌측 메뉴에서 팀을 선택하세요.</td></tr>
+              <tr class="empty-row"><td colspan="9">좌측 메뉴에서 팀을 선택하세요.</td></tr>
             </tbody>
           </table>
         </div>
@@ -1114,6 +1114,7 @@ function selectTeam(section, team) {
 
   document.getElementById(section + '-teamPanelTitle').textContent = team + ' 일정';
   document.getElementById(section + '-teamPanelSub').textContent   = team + '의 제출 현황입니다.';
+  state[section].currentTeam = team;
   loadTeamData(section, team);
 }
 
@@ -1204,7 +1205,7 @@ function renderTeamTable(section) {
   });
   const tbody = document.getElementById(section + '-teamTableBody');
   if (!data.length) {
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="8">📭 제출된 항목이 없습니다.</td></tr>`;
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="9">📭 제출된 항목이 없습니다.</td></tr>`;
     return;
   }
   tbody.innerHTML = data.map((d, i) => `
@@ -1217,6 +1218,10 @@ function renderTeamTable(section) {
       <td class="col-note">${esc(d.note||'')}</td>
       <td class="col-ts">${esc(d.submitted_at||'')}</td>
       <td style="text-align:center">${d.approved ? '<span class="approved-mark" title="승인됨">✓ 승인</span>' : '<span style="color:var(--muted);font-size:12px">—</span>'}</td>
+      <td style="white-space:nowrap">
+        <button class="edit-btn" onclick="openEditById('${d.id}','${section}')">수정</button>
+        <button class="del-btn"  onclick="deleteEntry('${d.id}','${section}')">삭제</button>
+      </td>
     </tr>
   `).join('');
   renderCalendar(section, 'team');
@@ -1306,8 +1311,11 @@ async function deleteEntry(id, section) {
   if (!confirm('이 항목을 삭제하시겠습니까?')) return;
   const res  = await fetch(`/api/delete/${id}`, { method:'DELETE' });
   const data = await res.json();
-  if (data.success) { showToast('삭제되었습니다.', 'success'); loadAllData(section); }
-  else showToast(data.message || '삭제 실패', 'error');
+  if (data.success) {
+    showToast('삭제되었습니다.', 'success');
+    loadAllData(section);
+    if (state[section].currentTeam) loadTeamData(section, state[section].currentTeam);
+  } else showToast(data.message || '삭제 실패', 'error');
 }
 
 // ── 수정 모달 ─────────────────────────────────────────────
@@ -1334,7 +1342,8 @@ function setEditDateField(which, val) {
 }
 
 function openEditById(id, section) {
-  const d = state[section].allData.find(x => x.id === id);
+  const d = state[section].allData.find(x => x.id === id)
+         || state[section].teamData.find(x => x.id === id);
   if (!d) return;
 
   document.getElementById('editEntryId').value = id;
@@ -1421,8 +1430,12 @@ async function submitEdit() {
     method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
   });
   const data = await res.json();
-  if (data.success) { closeEditModal(); showToast('수정되었습니다.', 'success'); loadAllData(section); }
-  else showToast(data.message || '수정 실패', 'error');
+  if (data.success) {
+    closeEditModal();
+    showToast('수정되었습니다.', 'success');
+    loadAllData(section);
+    if (state[section].currentTeam) loadTeamData(section, state[section].currentTeam);
+  } else showToast(data.message || '수정 실패', 'error');
 }
 
 // ── 폼 기능 ───────────────────────────────────────────────
