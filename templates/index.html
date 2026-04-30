@@ -1721,7 +1721,7 @@ function renderContentList() {
   tbody.innerHTML = sorted.map((d, i) => {
     const color = getContentColor(d.category);
     return `<tr>
-      <td class="col-no">${i+1}</td>
+      <td class="col-no col-hide-mob">${i+1}</td>
       <td class="col-schedule">${esc(fmtSchedule(d.schedule))}</td>
       <td><span class="tag" style="background:${color}22;color:${color};border:1px solid ${color}55">${esc(d.category)}</span></td>
       <td class="col-product">${esc(d.product)}</td>
