@@ -327,11 +327,16 @@
 
   /* ── MOBILE ── */
   @media (max-width: 768px) {
+    html, body { overflow-x: hidden; }
+
     header { padding: 0 16px; justify-content: space-between; }
-    .logo { font-size: 13px; gap: 8px; }
+    .logo { font-size: 12px; gap: 6px; }
+    .logo-icon-img { width: 26px; height: 26px; }
     .hamburger { display: flex; }
+    .admin-link { display: none; }
 
     .app-layout { grid-template-columns: 1fr; }
+    .main-content { min-width: 0; overflow-x: hidden; }
 
     .sidebar {
       position: fixed;
@@ -347,33 +352,53 @@
     .sidebar-backdrop { display: block; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
     .sidebar-backdrop.show { opacity: 1; pointer-events: all; }
 
-    .panel { padding: 16px 12px; }
-    .panel-header { flex-direction: column; gap: 10px; }
-    .panel-header > div:last-child { flex-wrap: wrap; }
+    .panel { padding: 14px 10px; min-width: 0; }
+    .panel-header { flex-direction: column; gap: 8px; }
+    .panel-header > div:last-child { flex-wrap: wrap; gap: 6px; }
+    .panel-title { font-size: 16px; }
+    .panel-sub { font-size: 12px; }
 
-    .card-body { padding: 16px; }
+    .card-body { padding: 14px; }
     .field-row { grid-template-columns: 1fr; gap: 12px; }
 
     .stats { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-    .stat-num { font-size: 22px; }
-    .stat-card { padding: 12px 14px; }
+    .stat-num { font-size: 20px; }
+    .stat-card { padding: 10px 12px; }
 
-    .date-tabs-wrap { padding: 10px 14px; }
-    .date-tab { padding: 4px 10px; font-size: 11px; }
-    .tab-row-label { font-size: 10px; min-width: 24px; }
+    .date-tabs-wrap { padding: 8px 10px; }
+    .date-tab { padding: 3px 8px; font-size: 11px; }
+    .tab-row-label { font-size: 10px; min-width: 22px; }
 
-    .filters { flex-direction: column; gap: 10px; align-items: stretch; }
+    .filters { flex-direction: column; gap: 8px; align-items: stretch; }
     .filter-group select, .filter-group input { min-width: unset; width: 100%; }
     .filters > .btn { align-self: flex-start; }
 
+    /* 테이블: 비필수 컬럼 숨김 */
+    .col-hide-mob { display: none !important; }
     .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    table { min-width: 540px; }
+    table { min-width: 340px; font-size: 12px; }
+    thead th { padding: 10px 8px; font-size: 11px; }
+    tbody td { padding: 9px 8px; }
+    .col-schedule { font-size: 11px; }
+    .col-product { max-width: 110px; font-size: 12px; }
+    .edit-btn, .del-btn { font-size: 10px; padding: 3px 6px; }
+
+    /* 수정 모달 모바일 */
+    .modal-box { width: 95vw !important; max-height: 90vh; overflow-y: auto;
+      padding: 20px 14px !important; border-radius: 12px; }
+    .modal-box > div[style*="grid-template-columns:1fr 1fr"],
+    .modal-box > div[style*="grid-template-columns: 1fr 1fr"] {
+      grid-template-columns: 1fr !important;
+    }
 
     .btn-row { justify-content: center; }
-    .entry-item { padding: 12px; gap: 10px; }
-    .cal-day { min-height: 58px; padding: 3px 2px 2px; }
+    .entry-item { padding: 10px; gap: 8px; }
+    .cal-day { min-height: 52px; padding: 3px 2px 2px; }
     .cal-event { font-size: 9px; padding: 1px 3px; }
     .cal-day-num { font-size: 10px; width: 16px; height: 16px; }
+
+    /* 콘텐츠 캘린더 범례 */
+    #panel-content-cal .panel-header { gap: 6px; }
   }
 </style>
 </head>
@@ -597,7 +622,7 @@
         <div class="table-wrap">
           <table>
             <thead><tr>
-              <th class="col-no">#</th><th>일정</th><th>담당자</th><th>구분</th><th>제품명 / 행사명</th><th>비고</th><th>제출시각</th><th>승인여부</th><th>수정/삭제</th>
+              <th class="col-no col-hide-mob">#</th><th>일정</th><th>담당자</th><th>구분</th><th>제품명 / 행사명</th><th class="col-hide-mob">비고</th><th class="col-hide-mob">제출시각</th><th class="col-hide-mob">승인여부</th><th>수정/삭제</th>
             </tr></thead>
             <tbody id="promo-teamTableBody">
               <tr class="empty-row"><td colspan="9">좌측 메뉴에서 팀을 선택하세요.</td></tr>
@@ -660,7 +685,7 @@
         <div class="table-wrap">
           <table>
             <thead><tr>
-              <th class="col-no">#</th><th>일정</th><th>담당팀</th><th>담당자</th><th>구분</th><th>제품명 / 행사명</th><th>비고</th><th>제출시각</th><th>승인여부</th><th></th>
+              <th class="col-no col-hide-mob">#</th><th>일정</th><th>담당팀</th><th class="col-hide-mob">담당자</th><th>구분</th><th>제품명 / 행사명</th><th class="col-hide-mob">비고</th><th class="col-hide-mob">제출시각</th><th class="col-hide-mob">승인여부</th><th></th>
             </tr></thead>
             <tbody id="promo-allTableBody"></tbody>
           </table>
@@ -827,7 +852,7 @@
         <div class="table-wrap">
           <table>
             <thead><tr class="purple">
-              <th class="col-no">#</th><th>일정</th><th>담당자</th><th>구분</th><th>제품명</th><th>비고</th><th>제출시각</th><th>승인여부</th><th>수정/삭제</th>
+              <th class="col-no col-hide-mob">#</th><th>일정</th><th>담당자</th><th>구분</th><th>제품명</th><th class="col-hide-mob">비고</th><th class="col-hide-mob">제출시각</th><th class="col-hide-mob">승인여부</th><th>수정/삭제</th>
             </tr></thead>
             <tbody id="tasting-teamTableBody">
               <tr class="empty-row"><td colspan="9">좌측 메뉴에서 팀을 선택하세요.</td></tr>
@@ -890,7 +915,7 @@
         <div class="table-wrap">
           <table>
             <thead><tr class="purple">
-              <th class="col-no">#</th><th>일정</th><th>담당팀</th><th>담당자</th><th>구분</th><th>제품명</th><th>비고</th><th>제출시각</th><th>승인여부</th><th></th>
+              <th class="col-no col-hide-mob">#</th><th>일정</th><th>담당팀</th><th class="col-hide-mob">담당자</th><th>구분</th><th>제품명</th><th class="col-hide-mob">비고</th><th class="col-hide-mob">제출시각</th><th class="col-hide-mob">승인여부</th><th></th>
             </tr></thead>
             <tbody id="tasting-allTableBody"></tbody>
           </table>
@@ -934,7 +959,7 @@
         <div class="table-wrap">
           <table>
             <thead><tr style="background:linear-gradient(90deg,#0d9488,#0f766e)">
-              <th class="col-no">#</th><th>일정</th><th>구분</th><th>제목 / 제품명</th><th>비고</th><th>등록일</th>
+              <th class="col-no col-hide-mob">#</th><th>일정</th><th>구분</th><th>제목 / 제품명</th><th class="col-hide-mob">비고</th><th class="col-hide-mob">등록일</th>
             </tr></thead>
             <tbody id="content-cal-tbody">
               <tr class="empty-row"><td colspan="6">새로고침을 눌러 불러오세요.</td></tr>
@@ -1210,14 +1235,14 @@ function renderTeamTable(section) {
   }
   tbody.innerHTML = data.map((d, i) => `
     <tr>
-      <td class="col-no">${i+1}</td>
+      <td class="col-no col-hide-mob">${i+1}</td>
       <td class="col-schedule">${esc(fmtSchedule(d.schedule))}</td>
       <td>${esc(d.name)}</td>
       <td><span class="tag tag-${d.category}">${esc(d.category)}</span></td>
       <td class="col-product">${esc(d.product)}</td>
-      <td class="col-note">${esc(d.note||'')}</td>
-      <td class="col-ts">${esc(d.submitted_at||'')}</td>
-      <td style="text-align:center">${d.approved ? '<span class="approved-mark" title="승인됨">✓ 승인</span>' : '<span style="color:var(--muted);font-size:12px">—</span>'}</td>
+      <td class="col-note col-hide-mob">${esc(d.note||'')}</td>
+      <td class="col-ts col-hide-mob">${esc(d.submitted_at||'')}</td>
+      <td class="col-hide-mob" style="text-align:center">${d.approved ? '<span class="approved-mark" title="승인됨">✓ 승인</span>' : '<span style="color:var(--muted);font-size:12px">—</span>'}</td>
       <td style="white-space:nowrap">
         <button class="edit-btn" onclick="openEditById('${d.id}','${section}')">수정</button>
         <button class="del-btn"  onclick="deleteEntry('${d.id}','${section}')">삭제</button>
@@ -1282,15 +1307,15 @@ function applyFilter(section) {
   }
   tbody.innerHTML = filtered.map((d, i) => `
     <tr>
-      <td class="col-no">${i+1}</td>
+      <td class="col-no col-hide-mob">${i+1}</td>
       <td class="col-schedule">${esc(fmtSchedule(d.schedule))}</td>
       <td class="col-team">${esc(d.team)}</td>
-      <td>${esc(d.name)}</td>
+      <td class="col-hide-mob">${esc(d.name)}</td>
       <td><span class="tag tag-${d.category}">${esc(d.category)}</span></td>
       <td class="col-product">${esc(d.product)}</td>
-      <td class="col-note">${esc(d.note||'')}</td>
-      <td class="col-ts">${esc(d.submitted_at||'')}</td>
-      <td style="text-align:center">${d.approved ? '<span class="approved-mark" title="승인됨">✓ 승인</span>' : '<span style="color:var(--muted);font-size:12px">—</span>'}</td>
+      <td class="col-note col-hide-mob">${esc(d.note||'')}</td>
+      <td class="col-ts col-hide-mob">${esc(d.submitted_at||'')}</td>
+      <td class="col-hide-mob" style="text-align:center">${d.approved ? '<span class="approved-mark" title="승인됨">✓ 승인</span>' : '<span style="color:var(--muted);font-size:12px">—</span>'}</td>
       <td style="white-space:nowrap">
         <button class="edit-btn" onclick="openEditById('${d.id}','${section}')">수정</button>
         <button class="del-btn"  onclick="deleteEntry('${d.id}','${section}')">삭제</button>
@@ -1696,8 +1721,8 @@ function renderContentList() {
       <td class="col-schedule">${esc(fmtSchedule(d.schedule))}</td>
       <td><span class="tag" style="background:${color}22;color:${color};border:1px solid ${color}55">${esc(d.category)}</span></td>
       <td class="col-product">${esc(d.product)}</td>
-      <td class="col-note">${esc(d.note||'')}</td>
-      <td class="col-ts">${esc(d.submitted_at||'')}</td>
+      <td class="col-note col-hide-mob">${esc(d.note||'')}</td>
+      <td class="col-ts col-hide-mob">${esc(d.submitted_at||'')}</td>
     </tr>`;
   }).join('');
 }
