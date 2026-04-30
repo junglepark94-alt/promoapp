@@ -208,12 +208,17 @@
     main { padding:14px 10px 60px; }
     header { padding:0 14px; }
     .logo { font-size:12px; gap:6px; }
+    .logo img { width:24px; height:24px; }
+    .header-nav a { font-size:11px; padding:5px 8px; white-space:nowrap; }
+
+    .login-wrap { margin:30px auto; padding:24px 18px; }
 
     .toolbar { flex-direction:column; align-items:flex-start; gap:10px; }
-    .toolbar-right { flex-wrap:wrap; gap:8px; }
+    .toolbar-right { flex-wrap:wrap; gap:8px; width:100%; }
+    .toolbar-right > * { flex:1; justify-content:center; text-align:center; }
 
-    .section-tabs { flex-wrap:wrap; gap:4px; }
-    .section-tab { padding:6px 14px; font-size:12px; }
+    .section-tabs { flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; gap:4px; padding-bottom:4px; }
+    .section-tab { padding:6px 12px; font-size:12px; flex-shrink:0; }
 
     .stats { grid-template-columns:repeat(2,1fr); gap:8px; }
     .stat-card { padding:12px 10px; }
@@ -221,12 +226,15 @@
 
     .filters { flex-direction:column; gap:8px; align-items:stretch; }
     .filter-group select, .filter-group input { min-width:unset; width:100%; }
+    .filters > .btn { width:100%; justify-content:center; }
 
     .col-hide-mob { display:none !important; }
     .table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
-    table { min-width:340px; font-size:12px; }
+    table { min-width:unset; font-size:12px; }
     thead th { padding:10px 8px; font-size:11px; }
     tbody td { padding:9px 8px; }
+    .col-schedule { white-space:normal; word-break:keep-all; font-size:11px; width:72px; }
+    .col-product { max-width:110px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .btn-sm { font-size:10px; padding:3px 7px; }
 
     /* 콘텐츠 섹션 */
