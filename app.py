@@ -232,6 +232,11 @@ def export():
             return (dt.year, dt.month, dt.day, d.get("team",""), d.get("name",""))
         except ValueError:
             pass
+        try:
+            dt = datetime.strptime(s, "%Y-%m")
+            return (dt.year, dt.month, 0, d.get("team",""), d.get("name",""))
+        except ValueError:
+            pass
         MONTH_ORDER  = {m: i for i,m in enumerate(["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"])}
         PERIOD_ORDER = {"초":0,"중":1,"말":2,"(미정)":3}
         for m, mi in MONTH_ORDER.items():
