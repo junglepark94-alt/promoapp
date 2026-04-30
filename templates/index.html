@@ -373,15 +373,18 @@
     .filter-group select, .filter-group input { min-width: unset; width: 100%; }
     .filters > .btn { align-self: flex-start; }
 
-    /* 테이블: 비필수 컬럼 숨김 */
+    /* 테이블: 비필수 컬럼 숨김 + 가로 넘침 방지 */
     .col-hide-mob { display: none !important; }
-    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    table { min-width: 340px; font-size: 12px; }
-    thead th { padding: 10px 8px; font-size: 11px; }
-    tbody td { padding: 9px 8px; }
-    .col-schedule { font-size: 11px; }
-    .col-product { max-width: 110px; font-size: 12px; }
-    .edit-btn, .del-btn { font-size: 10px; padding: 3px 6px; }
+    .table-wrap { overflow-x: hidden; }
+    table { min-width: unset !important; width: 100%; font-size: 12px; }
+    thead th { padding: 9px 6px; font-size: 11px; }
+    tbody td { padding: 8px 6px; overflow: hidden; }
+    .col-schedule { white-space: normal; word-break: break-all; font-size: 11px; width: 76px; }
+    .col-product { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90px; }
+    .col-team { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 64px; }
+    .tag { max-width: 64px; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle; }
+    .edit-btn, .del-btn { font-size: 10px; padding: 3px 5px; display: block; width: 100%; margin-bottom: 2px; text-align: center; }
+    .approved-mark { font-size: 11px; }
 
     /* 수정 모달 모바일 */
     .modal-box { width: 95vw !important; max-height: 90vh; overflow-y: auto;
@@ -1923,12 +1926,18 @@ function toggleSidebar() {
 }
 
 // 모바일: 메뉴 선택 시 사이드바 자동 닫기
+// 팀별 일정 드롭다운 토글 버튼은 사이드바를 닫지 않음
+function closeSidebar() {
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('sidebarBackdrop').classList.remove('show');
+  document.getElementById('hamburger').classList.remove('open');
+}
 document.querySelectorAll('.nav-item, .nav-sub-item').forEach(btn => {
   btn.addEventListener('click', () => {
     if (window.innerWidth <= 768) {
-      document.querySelector('.sidebar').classList.remove('open');
-      document.getElementById('sidebarBackdrop').classList.remove('show');
-      document.getElementById('hamburger').classList.remove('open');
+      // 팀 드롭다운 토글 버튼은 사이드바 유지
+      if (btn.id && btn.id.endsWith('-team-toggle')) return;
+      closeSidebar();
     }
   });
 });
