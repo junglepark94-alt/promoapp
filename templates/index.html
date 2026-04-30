@@ -237,6 +237,17 @@
   .empty-state { text-align:center; padding:32px 16px; color:var(--muted); font-size:13px; border:1.5px dashed var(--border); border-radius:10px; background:var(--accent); }
   .empty-state .icon { font-size:28px; margin-bottom:8px; }
 
+  /* ── DATE TABS ── */
+  .date-tabs-wrap { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px 20px; margin-bottom:16px; }
+  .date-tab-row { display:flex; align-items:center; gap:10px; }
+  .date-tab-row + .date-tab-row { margin-top:10px; }
+  .tab-row-label { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.4px; white-space:nowrap; min-width:30px; }
+  .date-tabs { display:flex; gap:5px; flex-wrap:wrap; }
+  .date-tab { padding:4px 12px; border-radius:20px; border:1.5px solid var(--border); background:white; color:var(--muted); font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s; font-family:'Noto Sans KR',sans-serif; }
+  .date-tab:hover { border-color:var(--sky); color:var(--text); background:var(--accent); }
+  .date-tab.active-blue   { background:var(--navy);   border-color:var(--navy);   color:white; }
+  .date-tab.active-purple { background:var(--purple); border-color:var(--purple); color:white; }
+
   /* ── TOAST ── */
   #toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(20px); padding:12px 28px; border-radius:10px; font-size:14px; font-weight:600; color:white; opacity:0; transition:all 0.3s; z-index:999; pointer-events:none; }
   #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
@@ -392,6 +403,10 @@
             <div class="panel-sub" id="promo-teamPanelSub">좌측 메뉴에서 팀을 선택하세요.</div>
           </div>
         </div>
+        <div class="date-tabs-wrap">
+          <div class="date-tab-row"><span class="tab-row-label">연도</span><div class="date-tabs" id="promo-team-yearTabs"></div></div>
+          <div class="date-tab-row"><span class="tab-row-label">월</span><div class="date-tabs" id="promo-team-monthTabs"></div></div>
+        </div>
         <div class="table-wrap">
           <table>
             <thead><tr>
@@ -421,6 +436,10 @@
           </div>
         </div>
         <div class="stats" id="promo-statsArea"></div>
+        <div class="date-tabs-wrap">
+          <div class="date-tab-row"><span class="tab-row-label">연도</span><div class="date-tabs" id="promo-all-yearTabs"></div></div>
+          <div class="date-tab-row"><span class="tab-row-label">월</span><div class="date-tabs" id="promo-all-monthTabs"></div></div>
+        </div>
         <div class="filters">
           <div class="filter-group">
             <label>담당팀</label>
@@ -543,6 +562,10 @@
             <div class="panel-sub" id="tasting-teamPanelSub">좌측 메뉴에서 팀을 선택하세요.</div>
           </div>
         </div>
+        <div class="date-tabs-wrap">
+          <div class="date-tab-row"><span class="tab-row-label">연도</span><div class="date-tabs" id="tasting-team-yearTabs"></div></div>
+          <div class="date-tab-row"><span class="tab-row-label">월</span><div class="date-tabs" id="tasting-team-monthTabs"></div></div>
+        </div>
         <div class="table-wrap">
           <table>
             <thead><tr class="purple">
@@ -572,6 +595,10 @@
           </div>
         </div>
         <div class="stats" id="tasting-statsArea"></div>
+        <div class="date-tabs-wrap">
+          <div class="date-tab-row"><span class="tab-row-label">연도</span><div class="date-tabs" id="tasting-all-yearTabs"></div></div>
+          <div class="date-tab-row"><span class="tab-row-label">월</span><div class="date-tabs" id="tasting-all-monthTabs"></div></div>
+        </div>
         <div class="filters">
           <div class="filter-group">
             <label>담당팀</label>
@@ -625,8 +652,8 @@
 <script>
 // ── 상태 ──────────────────────────────────────────────────
 const state = {
-  promo:   { entries: [], allData: [] },
-  tasting: { entries: [], allData: [] }
+  promo:   { entries: [], allData: [], teamData: [], year: 'all', month: 'all' },
+  tasting: { entries: [], allData: [], teamData: [], year: 'all', month: 'all' }
 };
 let isAdmin = false;
 let pendingDeleteId = null;
@@ -685,10 +712,69 @@ function selectTeam(section, team) {
   loadTeamData(section, team);
 }
 
+// ── 날짜 파싱 헬퍼 ───────────────────────────────────────
+function parseScheduleYM(s) {
+  const m = s && s.match(/^(\d{4})-(\d{2})-\d{2}$/);
+  if (m) return { year: m[1], month: String(parseInt(m[2])) };
+  return null;
+}
+
+// ── 날짜 탭 렌더링 ────────────────────────────────────────
+function renderDateTabs(section, ctx) {
+  const data  = ctx === 'all' ? state[section].allData : state[section].teamData;
+  const color = section === 'promo' ? 'blue' : 'purple';
+  const yr    = state[section].year;
+  const mo    = state[section].month;
+
+  const years = [...new Set(
+    data.map(d => { const ym = parseScheduleYM(d.schedule); return ym ? ym.year : null; }).filter(Boolean)
+  )].sort();
+
+  const yearEl  = document.getElementById(`${section}-${ctx}-yearTabs`);
+  const monthEl = document.getElementById(`${section}-${ctx}-monthTabs`);
+  if (!yearEl) return;
+
+  yearEl.innerHTML = ['all', ...years].map(y =>
+    `<button class="date-tab ${yr === y ? 'active-'+color : ''}" onclick="setYear('${section}','${ctx}','${y}')">${y === 'all' ? '전체' : y+'년'}</button>`
+  ).join('');
+
+  monthEl.innerHTML = ['all','1','2','3','4','5','6','7','8','9','10','11','12'].map(m =>
+    `<button class="date-tab ${mo === m ? 'active-'+color : ''}" onclick="setMonth('${section}','${ctx}','${m}')">${m === 'all' ? '전체' : m+'월'}</button>`
+  ).join('');
+}
+
+function setYear(section, ctx, year) {
+  state[section].year = year;
+  renderDateTabs(section, ctx);
+  if (ctx === 'all') applyFilter(section); else renderTeamTable(section);
+}
+
+function setMonth(section, ctx, month) {
+  state[section].month = month;
+  renderDateTabs(section, ctx);
+  if (ctx === 'all') applyFilter(section); else renderTeamTable(section);
+}
+
 // ── 팀별 데이터 로드 ──────────────────────────────────────
 async function loadTeamData(section, team) {
-  const res  = await fetch(`/api/data?section=${section}&team=${encodeURIComponent(team)}`);
-  const data = await res.json();
+  const res = await fetch(`/api/data?section=${section}&team=${encodeURIComponent(team)}`);
+  state[section].teamData = await res.json();
+  state[section].year  = 'all';
+  state[section].month = 'all';
+  renderDateTabs(section, 'team');
+  renderTeamTable(section);
+}
+
+function renderTeamTable(section) {
+  const yr   = state[section].year;
+  const mo   = state[section].month;
+  const data = state[section].teamData.filter(d => {
+    if (yr === 'all' && mo === 'all') return true;
+    const ym = parseScheduleYM(d.schedule);
+    if (yr !== 'all' && (!ym || ym.year  !== yr)) return false;
+    if (mo !== 'all' && (!ym || ym.month !== mo)) return false;
+    return true;
+  });
   const tbody = document.getElementById(section + '-teamTableBody');
   if (!data.length) {
     tbody.innerHTML = `<tr class="empty-row"><td colspan="7">📭 제출된 항목이 없습니다.</td></tr>`;
@@ -712,6 +798,7 @@ async function loadAllData(section) {
   const res = await fetch(`/api/data?section=${section}`);
   state[section].allData = await res.json();
   renderStats(section);
+  renderDateTabs(section, 'all');
   applyFilter(section);
 }
 
@@ -737,6 +824,8 @@ function applyFilter(section) {
   const team   = document.getElementById(section + '-filterTeam').value;
   const cat    = document.getElementById(section + '-filterCat').value;
   const search = document.getElementById(section + '-filterSearch').value.toLowerCase();
+  const yr     = state[section].year;
+  const mo     = state[section].month;
   const data   = state[section].allData;
 
   const filtered = data.filter(d => {
@@ -744,6 +833,11 @@ function applyFilter(section) {
     if (cat    && d.category !== cat)  return false;
     if (search && !d.product.toLowerCase().includes(search) &&
         !(d.note||'').toLowerCase().includes(search)) return false;
+    if (yr !== 'all' || mo !== 'all') {
+      const ym = parseScheduleYM(d.schedule);
+      if (yr !== 'all' && (!ym || ym.year  !== yr)) return false;
+      if (mo !== 'all' && (!ym || ym.month !== mo)) return false;
+    }
     return true;
   });
 
