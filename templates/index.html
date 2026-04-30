@@ -434,25 +434,45 @@
             </div>
             <div class="field-row">
               <div class="field">
-                <label>일정 <span class="req">*</span></label>
-                <input type="date" id="promo-schedule">
+                <label>시작일 <span class="req">*</span></label>
+                <input type="date" id="promo-schedule-start">
                 <label class="partial-toggle">
-                  <input type="checkbox" id="promo-schedule-partial" onchange="togglePartialDate('promo')">
+                  <input type="checkbox" id="promo-schedule-start-partial" onchange="togglePartialDate('promo','start')">
                   일자 미정 (월까지만 선택)
                 </label>
-                <div class="partial-selects" id="promo-partial-selects">
-                  <select id="promo-schedule-year">
+                <div class="partial-selects" id="promo-partial-selects-start">
+                  <select id="promo-schedule-start-year">
                     <option value="">연도</option>
-
                     <option value="2026">2026년</option>
                     <option value="2027">2027년</option>
                   </select>
-                  <select id="promo-schedule-month">
+                  <select id="promo-schedule-start-month">
                     <option value="">월</option>
                     {% for m in range(1,13) %}<option value="{{ m }}">{{ m }}월</option>{% endfor %}
                   </select>
                 </div>
               </div>
+              <div class="field">
+                <label>마감일</label>
+                <input type="date" id="promo-schedule-end">
+                <label class="partial-toggle">
+                  <input type="checkbox" id="promo-schedule-end-partial" onchange="togglePartialDate('promo','end')">
+                  일자 미정 (월까지만 선택)
+                </label>
+                <div class="partial-selects" id="promo-partial-selects-end">
+                  <select id="promo-schedule-end-year">
+                    <option value="">연도</option>
+                    <option value="2026">2026년</option>
+                    <option value="2027">2027년</option>
+                  </select>
+                  <select id="promo-schedule-end-month">
+                    <option value="">월</option>
+                    {% for m in range(1,13) %}<option value="{{ m }}">{{ m }}월</option>{% endfor %}
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="field-row">
               <div class="field">
                 <label>구분 <span class="req">*</span></label>
                 <select id="promo-category">
@@ -460,6 +480,7 @@
                   {% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
                 </select>
               </div>
+              <div class="field"></div>
             </div>
             <div class="field" style="margin-bottom:14px">
               <label>제품명 / 행사명 <span class="req">*</span></label>
@@ -605,25 +626,45 @@
             </div>
             <div class="field-row">
               <div class="field">
-                <label>진행 희망 일정 <span class="req">*</span></label>
-                <input type="date" id="tasting-schedule">
+                <label>시작일 <span class="req">*</span></label>
+                <input type="date" id="tasting-schedule-start">
                 <label class="partial-toggle">
-                  <input type="checkbox" id="tasting-schedule-partial" onchange="togglePartialDate('tasting')">
+                  <input type="checkbox" id="tasting-schedule-start-partial" onchange="togglePartialDate('tasting','start')">
                   일자 미정 (월까지만 선택)
                 </label>
-                <div class="partial-selects" id="tasting-partial-selects">
-                  <select id="tasting-schedule-year">
+                <div class="partial-selects" id="tasting-partial-selects-start">
+                  <select id="tasting-schedule-start-year">
                     <option value="">연도</option>
-
                     <option value="2026">2026년</option>
                     <option value="2027">2027년</option>
                   </select>
-                  <select id="tasting-schedule-month">
+                  <select id="tasting-schedule-start-month">
                     <option value="">월</option>
                     {% for m in range(1,13) %}<option value="{{ m }}">{{ m }}월</option>{% endfor %}
                   </select>
                 </div>
               </div>
+              <div class="field">
+                <label>마감일</label>
+                <input type="date" id="tasting-schedule-end">
+                <label class="partial-toggle">
+                  <input type="checkbox" id="tasting-schedule-end-partial" onchange="togglePartialDate('tasting','end')">
+                  일자 미정 (월까지만 선택)
+                </label>
+                <div class="partial-selects" id="tasting-partial-selects-end">
+                  <select id="tasting-schedule-end-year">
+                    <option value="">연도</option>
+                    <option value="2026">2026년</option>
+                    <option value="2027">2027년</option>
+                  </select>
+                  <select id="tasting-schedule-end-month">
+                    <option value="">월</option>
+                    {% for m in range(1,13) %}<option value="{{ m }}">{{ m }}월</option>{% endfor %}
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="field-row">
               <div class="field">
                 <label>구분 <span class="req">*</span></label>
                 <select id="tasting-category">
@@ -631,6 +672,7 @@
                   {% for c in tasting_categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
                 </select>
               </div>
+              <div class="field"></div>
             </div>
             <div class="field" style="margin-bottom:14px">
               <label>제품명 <span class="req">*</span></label>
@@ -773,23 +815,44 @@
         <input type="text" id="edit-name">
       </div>
     </div>
-    <div class="field" style="margin-bottom:14px">
-      <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px">일정</label>
-      <input type="date" id="edit-schedule">
-      <label class="partial-toggle">
-        <input type="checkbox" id="edit-schedule-partial" onchange="toggleEditPartial()">
-        일자 미정 (월까지만)
-      </label>
-      <div class="partial-selects" id="edit-partial-selects">
-        <select id="edit-schedule-year">
-          <option value="">연도</option>
-          <option value="2026">2026년</option>
-          <option value="2027">2027년</option>
-        </select>
-        <select id="edit-schedule-month">
-          <option value="">월</option>
-          {% for m in range(1,13) %}<option value="{{ m }}">{{ m }}월</option>{% endfor %}
-        </select>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <div class="field">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px">시작일 <span class="req">*</span></label>
+        <input type="date" id="edit-schedule-start">
+        <label class="partial-toggle">
+          <input type="checkbox" id="edit-schedule-start-partial" onchange="toggleEditPartial('start')">
+          일자 미정 (월까지만)
+        </label>
+        <div class="partial-selects" id="edit-partial-selects-start">
+          <select id="edit-schedule-start-year">
+            <option value="">연도</option>
+            <option value="2026">2026년</option>
+            <option value="2027">2027년</option>
+          </select>
+          <select id="edit-schedule-start-month">
+            <option value="">월</option>
+            {% for m in range(1,13) %}<option value="{{ m }}">{{ m }}월</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px">마감일</label>
+        <input type="date" id="edit-schedule-end">
+        <label class="partial-toggle">
+          <input type="checkbox" id="edit-schedule-end-partial" onchange="toggleEditPartial('end')">
+          일자 미정 (월까지만)
+        </label>
+        <div class="partial-selects" id="edit-partial-selects-end">
+          <select id="edit-schedule-end-year">
+            <option value="">연도</option>
+            <option value="2026">2026년</option>
+            <option value="2027">2027년</option>
+          </select>
+          <select id="edit-schedule-end-month">
+            <option value="">월</option>
+            {% for m in range(1,13) %}<option value="{{ m }}">{{ m }}월</option>{% endfor %}
+          </select>
+        </div>
       </div>
     </div>
     <div class="field" style="margin-bottom:14px">
@@ -882,25 +945,30 @@ function selectTeam(section, team) {
 
 // ── 날짜 헬퍼 ────────────────────────────────────────────
 function parseScheduleYM(s) {
-  let m = s && s.match(/^(\d{4})-(\d{2})-\d{2}$/);
+  const start = s ? s.split('~')[0].trim() : '';
+  let m = start.match(/^(\d{4})-(\d{2})-\d{2}$/);
   if (m) return { year: m[1], month: String(parseInt(m[2])) };
-  m = s && s.match(/^(\d{4})-(\d{2})$/);
+  m = start.match(/^(\d{4})-(\d{2})$/);
   if (m) return { year: m[1], month: String(parseInt(m[2])) };
   return null;
 }
 
 function fmtSchedule(s) {
-  if (/^\d{4}-\d{2}$/.test(s)) {
-    const [y, mo] = s.split('-');
-    return `${y}년 ${parseInt(mo)}월 (미정)`;
-  }
-  return s;
+  if (!s) return '';
+  return s.split('~').map(p => {
+    p = p.trim();
+    if (/^\d{4}-\d{2}$/.test(p)) {
+      const [y, mo] = p.split('-');
+      return `${y}년 ${parseInt(mo)}월 (미정)`;
+    }
+    return p;
+  }).join(' ~ ');
 }
 
-function togglePartialDate(section) {
-  const checked = document.getElementById(section + '-schedule-partial').checked;
-  document.getElementById(section + '-schedule').style.display        = checked ? 'none' : '';
-  document.getElementById(section + '-partial-selects').classList.toggle('show', checked);
+function togglePartialDate(section, which) {
+  const checked = document.getElementById(`${section}-schedule-${which}-partial`).checked;
+  document.getElementById(`${section}-schedule-${which}`).style.display = checked ? 'none' : '';
+  document.getElementById(`${section}-partial-selects-${which}`).classList.toggle('show', checked);
 }
 
 // ── 날짜 탭 렌더링 ────────────────────────────────────────
@@ -1065,10 +1133,26 @@ async function deleteEntry(id, section) {
 }
 
 // ── 수정 모달 ─────────────────────────────────────────────
-function toggleEditPartial() {
-  const checked = document.getElementById('edit-schedule-partial').checked;
-  document.getElementById('edit-schedule').style.display = checked ? 'none' : '';
-  document.getElementById('edit-partial-selects').classList.toggle('show', checked);
+function toggleEditPartial(which) {
+  const checked = document.getElementById(`edit-schedule-${which}-partial`).checked;
+  document.getElementById(`edit-schedule-${which}`).style.display = checked ? 'none' : '';
+  document.getElementById(`edit-partial-selects-${which}`).classList.toggle('show', checked);
+}
+
+function setEditDateField(which, val) {
+  if (val && /^\d{4}-\d{2}$/.test(val)) {
+    const [y, m] = val.split('-');
+    document.getElementById(`edit-schedule-${which}-partial`).checked = true;
+    document.getElementById(`edit-schedule-${which}-year`).value  = y;
+    document.getElementById(`edit-schedule-${which}-month`).value = String(parseInt(m));
+    document.getElementById(`edit-schedule-${which}`).value = '';
+  } else {
+    document.getElementById(`edit-schedule-${which}-partial`).checked = false;
+    document.getElementById(`edit-schedule-${which}`).value = val || '';
+    document.getElementById(`edit-schedule-${which}-year`).value  = '';
+    document.getElementById(`edit-schedule-${which}-month`).value = '';
+  }
+  toggleEditPartial(which);
 }
 
 function openEditById(id, section) {
@@ -1088,20 +1172,12 @@ function openEditById(id, section) {
   catSel.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
   catSel.value = d.category || '';
 
-  // 일정
-  if (/^\d{4}-\d{2}$/.test(d.schedule)) {
-    const [y, m] = d.schedule.split('-');
-    document.getElementById('edit-schedule-partial').checked = true;
-    document.getElementById('edit-schedule-year').value  = y;
-    document.getElementById('edit-schedule-month').value = String(parseInt(m));
-    document.getElementById('edit-schedule').value = '';
-  } else {
-    document.getElementById('edit-schedule-partial').checked = false;
-    document.getElementById('edit-schedule').value = d.schedule || '';
-    document.getElementById('edit-schedule-year').value  = '';
-    document.getElementById('edit-schedule-month').value = '';
-  }
-  toggleEditPartial();
+  // 시작일 ~ 마감일 파싱
+  const parts    = (d.schedule || '').split('~');
+  const startStr = parts[0] ? parts[0].trim() : '';
+  const endStr   = parts[1] ? parts[1].trim() : '';
+  setEditDateField('start', startStr);
+  setEditDateField('end',   endStr);
 
   document.getElementById('editModal').classList.remove('hidden');
 }
@@ -1114,17 +1190,29 @@ async function submitEdit() {
   const id      = document.getElementById('editEntryId').value;
   const section = document.getElementById('editSection').value;
 
-  const partialChecked = document.getElementById('edit-schedule-partial').checked;
-  let schedule;
-  if (partialChecked) {
-    const yr = document.getElementById('edit-schedule-year').value;
-    const mo = document.getElementById('edit-schedule-month').value;
-    if (!yr || !mo) return showToast('연도와 월을 선택해주세요.', 'error');
-    schedule = `${yr}-${String(mo).padStart(2, '0')}`;
+  // 시작일
+  const startPartial = document.getElementById('edit-schedule-start-partial').checked;
+  let startDate;
+  if (startPartial) {
+    const yr = document.getElementById('edit-schedule-start-year').value;
+    const mo = document.getElementById('edit-schedule-start-month').value;
+    if (!yr || !mo) return showToast('시작일의 연도와 월을 선택해주세요.', 'error');
+    startDate = `${yr}-${String(mo).padStart(2, '0')}`;
   } else {
-    schedule = document.getElementById('edit-schedule').value;
-    if (!schedule) return showToast('일정을 입력해주세요.', 'error');
+    startDate = document.getElementById('edit-schedule-start').value;
+    if (!startDate) return showToast('시작일을 입력해주세요.', 'error');
   }
+  // 마감일 (선택)
+  const endPartial = document.getElementById('edit-schedule-end-partial').checked;
+  let endDate = '';
+  if (endPartial) {
+    const yr = document.getElementById('edit-schedule-end-year').value;
+    const mo = document.getElementById('edit-schedule-end-month').value;
+    if (yr && mo) endDate = `${yr}-${String(mo).padStart(2, '0')}`;
+  } else {
+    endDate = document.getElementById('edit-schedule-end').value || '';
+  }
+  const schedule = endDate ? `${startDate}~${endDate}` : startDate;
 
   const body = {
     team:     document.getElementById('edit-team').value,
@@ -1157,18 +1245,29 @@ function addEntry(section) {
   const qtyEl    = document.getElementById(section + '-quantity');
   const quantity = qtyEl ? qtyEl.value.trim() : '';
 
-  // 일정 — 미정 체크 여부에 따라 다르게 수집
-  const partialChecked = document.getElementById(section + '-schedule-partial').checked;
-  let schedule;
-  if (partialChecked) {
-    const yr = document.getElementById(section + '-schedule-year').value;
-    const mo = document.getElementById(section + '-schedule-month').value;
-    if (!yr || !mo) return showToast('연도와 월을 선택해주세요.', 'error');
-    schedule = `${yr}-${String(mo).padStart(2, '0')}`;
+  // 시작일
+  const startPartial = document.getElementById(section + '-schedule-start-partial').checked;
+  let startDate;
+  if (startPartial) {
+    const yr = document.getElementById(section + '-schedule-start-year').value;
+    const mo = document.getElementById(section + '-schedule-start-month').value;
+    if (!yr || !mo) return showToast('시작일의 연도와 월을 선택해주세요.', 'error');
+    startDate = `${yr}-${String(mo).padStart(2, '0')}`;
   } else {
-    schedule = g(section + '-schedule');
-    if (!schedule) return showToast('일정을 입력해주세요.', 'error');
+    startDate = document.getElementById(section + '-schedule-start').value;
+    if (!startDate) return showToast('시작일을 입력해주세요.', 'error');
   }
+  // 마감일 (선택)
+  const endPartial = document.getElementById(section + '-schedule-end-partial').checked;
+  let endDate = '';
+  if (endPartial) {
+    const yr = document.getElementById(section + '-schedule-end-year').value;
+    const mo = document.getElementById(section + '-schedule-end-month').value;
+    if (yr && mo) endDate = `${yr}-${String(mo).padStart(2, '0')}`;
+  } else {
+    endDate = document.getElementById(section + '-schedule-end').value || '';
+  }
+  const schedule = endDate ? `${startDate}~${endDate}` : startDate;
 
   if (!team)     return showToast('담당팀을 선택해주세요.', 'error');
   if (!name)     return showToast('담당자 이름을 입력해주세요.', 'error');
@@ -1179,11 +1278,13 @@ function addEntry(section) {
   renderEntries(section);
 
   // 입력 초기화
-  document.getElementById(section + '-schedule').value = '';
-  document.getElementById(section + '-schedule-partial').checked = false;
-  document.getElementById(section + '-schedule-year').value  = '';
-  document.getElementById(section + '-schedule-month').value = '';
-  togglePartialDate(section);
+  ['start','end'].forEach(w => {
+    document.getElementById(`${section}-schedule-${w}`).value = '';
+    document.getElementById(`${section}-schedule-${w}-partial`).checked = false;
+    document.getElementById(`${section}-schedule-${w}-year`).value  = '';
+    document.getElementById(`${section}-schedule-${w}-month`).value = '';
+    togglePartialDate(section, w);
+  });
   document.getElementById(section + '-product').value = '';
   document.getElementById(section + '-note').value    = '';
   if (qtyEl) qtyEl.value = '';

@@ -315,7 +315,7 @@ def export():
             ws.row_dimensions[i].height = 18
 
     def sort_key(d):
-        s = d.get("schedule", "")
+        s = d.get("schedule", "").split("~")[0].strip()
         try:
             dt = datetime.strptime(s, "%Y-%m-%d")
             return (dt.year, dt.month, dt.day, d.get("team",""), d.get("name",""))
