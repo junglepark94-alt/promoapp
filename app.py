@@ -336,11 +336,20 @@ def export():
             ws.column_dimensions[cell.column_letter].width = width
         ws.row_dimensions[5].height = 20
 
+        def fmt_schedule(s):
+            if not s:
+                return ""
+            parts = [p.strip() for p in s.split("~")]
+            if len(parts) == 2 and parts[0] == parts[1]:
+                return parts[0]
+            return s
+
         for r_idx, row in enumerate(rows, 6):
             fill = stripe if r_idx % 2 == 0 else white
             ws.row_dimensions[r_idx].height = 18
             for c_idx, key in enumerate(["schedule","team","name","category","product","note"], 1):
-                cell           = ws.cell(row=r_idx, column=c_idx, value=row.get(key, ""))
+                value          = fmt_schedule(row.get(key, "")) if key == "schedule" else row.get(key, "")
+                cell           = ws.cell(row=r_idx, column=c_idx, value=value)
                 cell.font      = body_font
                 cell.fill      = fill
                 cell.alignment = center if c_idx <= 4 else left
