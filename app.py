@@ -18,9 +18,9 @@ TEAMS = [
     "커피 음료팀", "NC팀", "해외", "콘텐츠전략팀"
 ]
 
-CATEGORIES         = ["신제품", "리뉴얼", "프로모션", "박람회", "기타"]
+CATEGORIES         = ["신제품", "리뉴얼", "프로모션 및 신제품", "박람회", "기타"]
 TASTING_CATEGORIES = ["신제품", "리뉴얼", "기타"]
-CONTENT_CATEGORIES = ["국내 인스타그램", "글로벌 인스타그램", "국내 틱톡", "글로벌 틱톡", "글로벌 유튜브", "신제품 체험단"]
+CONTENT_CATEGORIES = ["국내 인스타그램", "글로벌 인스타그램", "국내 틱톡", "글로벌 틱톡", "글로벌 유튜브", "소비자 신제품 체험단"]
 TASTING_TEAMS      = [t for t in TEAMS if t not in ("해외", "콘텐츠전략팀")]
 
 EDITABLE_FIELDS = ["team", "name", "schedule", "category", "product", "note"]
@@ -306,7 +306,7 @@ def export():
 
     COLS   = ["일정", "담당팀", "담당자", "구분", "제품명", "비고"]
     WIDTHS = [14, 14, 10, 10, 32, 40]
-    title  = "신제품 체험단 일정 취합본" if section == "tasting" else "제품 출시 및 프로모션 일정 취합본"
+    title  = "소비자 신제품 체험단 일정 취합본" if section == "tasting" else "제품 출시 및 프로모션 및 신제품 일정 취합본"
 
     def make_sheet(ws, rows):
         ws.merge_cells("A1:F1")
@@ -384,7 +384,7 @@ def export():
 
     buf = io.BytesIO()
     wb.save(buf); buf.seek(0)
-    prefix   = "체험단일정" if section == "tasting" else "프로모션일정"
+    prefix   = "체험단일정" if section == "tasting" else "프로모션및신제품일정"
     filename = f"{prefix}_취합본_{datetime.now().strftime('%Y%m%d')}.xlsx"
     return send_file(buf, as_attachment=True, download_name=filename,
                      mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
