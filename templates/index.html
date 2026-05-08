@@ -1159,14 +1159,16 @@ function parseScheduleYM(s) {
 
 function fmtSchedule(s) {
   if (!s) return '';
-  return s.split('~').map(p => {
+  const parts = s.split('~').map(p => {
     p = p.trim();
     if (/^\d{4}-\d{2}$/.test(p)) {
       const [y, mo] = p.split('-');
       return `${y}년 ${parseInt(mo)}월 (미정)`;
     }
     return p;
-  }).join(' ~ ');
+  });
+  if (parts.length === 2 && parts[0] === parts[1]) return parts[0];
+  return parts.join(' ~ ');
 }
 
 function togglePartialDate(section, which) {
@@ -1437,7 +1439,7 @@ async function submitEdit() {
   } else {
     endDate = document.getElementById('edit-schedule-end').value || '';
   }
-  const schedule = endDate ? `${startDate}~${endDate}` : startDate;
+  const schedule = (endDate && endDate !== startDate) ? `${startDate}~${endDate}` : startDate;
 
   let editCategory = document.getElementById('edit-category').value;
   if (editCategory === '기타') {
@@ -1511,7 +1513,7 @@ function addEntry(section) {
   } else {
     endDate = document.getElementById(section + '-schedule-end').value || '';
   }
-  const schedule = endDate ? `${startDate}~${endDate}` : startDate;
+  const schedule = (endDate && endDate !== startDate) ? `${startDate}~${endDate}` : startDate;
 
   if (!team)     return showToast('담당팀을 선택해주세요.', 'error');
   if (!name)     return showToast('담당자 이름을 입력해주세요.', 'error');
