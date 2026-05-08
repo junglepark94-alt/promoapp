@@ -350,16 +350,18 @@ def export():
         for i in range(1, 5):
             ws.row_dimensions[i].height = 18
 
-    def sort_key(d):
+    TEAM_ORDER = {t: i for i, t in enumerate(TEAMS)}
+
+    def date_sort_key(d):
         s = d.get("schedule", "").split("~")[0].strip()
         try:
             dt = datetime.strptime(s, "%Y-%m-%d")
-            return (dt.year, dt.month, dt.day, d.get("team",""), d.get("name",""))
+            return (dt.year, dt.month, dt.day)
         except ValueError:
             pass
         try:
             dt = datetime.strptime(s, "%Y-%m")
-            return (dt.year, dt.month, 0, d.get("team",""), d.get("name",""))
+            return (dt.year, dt.month, 0)
         except ValueError:
             pass
         MONTH_ORDER  = {m: i for i,m in enumerate(["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"])}
@@ -368,8 +370,12 @@ def export():
             if s.startswith(m):
                 rest = s[len(m):]
                 pi   = next((v for k,v in PERIOD_ORDER.items() if k in rest), 99)
-                return (2024, mi+1, pi*10+1, d.get("team",""), d.get("name",""))
-        return (9999, 12, 31, d.get("team",""), d.get("name",""))
+                return (2024, mi+1, pi*10+1)
+        return (9999, 12, 31)
+
+    def sort_key(d):
+        team_idx = TEAM_ORDER.get(d.get("team", ""), 9999)
+        return (team_idx,) + date_sort_key(d) + (d.get("name", ""),)
 
     sorted_data  = sorted(data, key=sort_key)
     ws_all       = wb.active
