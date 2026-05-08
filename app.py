@@ -125,7 +125,7 @@ def content_add():
     note     = body.get("note", "")
     if not product or not start:
         return jsonify({"success": False, "message": "제목과 시작일을 입력하세요."}), 400
-    schedule = f"{start}~{end}" if end else start
+    schedule = f"{start}~{end}" if (end and end != start) else start
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     if USE_DB:
         with db() as cur:

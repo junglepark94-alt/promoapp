@@ -590,14 +590,16 @@ function resetFilters() {
 // ── 테이블 렌더링 ─────────────────────────────────────────
 function fmtSchedule(s) {
   if (!s) return '';
-  return s.split('~').map(p => {
+  const parts = s.split('~').map(p => {
     p = p.trim();
     if (/^\d{4}-\d{2}$/.test(p)) {
       const [y, m] = p.split('-');
       return `${y}년 ${parseInt(m)}월 (미정)`;
     }
     return p;
-  }).join(' ~ ');
+  });
+  if (parts.length === 2 && parts[0] === parts[1]) return parts[0];
+  return parts.join(' ~ ');
 }
 
 function renderTable(data) {
@@ -750,7 +752,7 @@ async function submitContentEdit() {
   if (!start)    return showToast('시작일을 입력하세요.', 'error');
   if (!category) return showToast('구분을 선택하세요.', 'error');
   if (!product)  return showToast('제목을 입력하세요.', 'error');
-  const schedule = end ? `${start}~${end}` : start;
+  const schedule = (end && end !== start) ? `${start}~${end}` : start;
   const res  = await fetch(`/api/update/${id}`, {
     method: 'PUT', headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ schedule, category, product, note })
