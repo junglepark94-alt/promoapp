@@ -263,7 +263,14 @@
   .del-btn:hover  { background:#fee2e2; }
   .edit-btn { background:none; border:1px solid var(--border); color:var(--muted); cursor:pointer; border-radius:5px; padding:3px 8px; font-size:11px; font-family:'Noto Sans KR',sans-serif; transition:all 0.15s; margin-right:4px; }
   .edit-btn:hover { background:var(--accent); color:var(--text); border-color:var(--sky); }
-  .approved-mark { color:var(--success); font-weight:700; font-size:13px; margin-right:3px; }
+  .done-mark { color:#6b7280; font-weight:700; font-size:12px; }
+  .ongoing-mark { color:var(--muted); font-size:12px; }
+  tbody tr.done-row { background:#f1f0ef; }
+  tbody tr.done-row:hover { background:#e8e6e5; }
+  tbody tr.done-row td { color:#8b8785; }
+  tbody tr.done-row .col-schedule { color:#8b8785; }
+  tbody tr.done-row .col-product { font-weight:500; }
+  tbody tr.done-row .tag { opacity:0.5; }
   .empty-row td { text-align:center; padding:48px; color:var(--muted); font-size:14px; }
 
   /* ── EMPTY ── */
@@ -317,7 +324,7 @@
   .ctt-cat { font-size:11px; font-weight:700; padding:1px 7px; border-radius:3px; color:white; }
   .ctt-schedule { color:#94a3b8; font-size:11px; }
   .ctt-note { color:#cbd5e1; font-size:11px; margin-top:6px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.1); word-break:keep-all; }
-  .ctt-approved { color:#4ade80; font-size:11px; font-weight:700; margin-top:4px; }
+  .ctt-done { color:#c9c4c1; font-size:11px; font-weight:700; margin-top:4px; }
 
   /* ── TOAST ── */
   #toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(20px); padding:12px 28px; border-radius:10px; font-size:14px; font-weight:600; color:white; opacity:0; transition:all 0.3s; z-index:999; pointer-events:none; }
@@ -385,7 +392,7 @@
     .col-team { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 64px; }
     .tag { max-width: 64px; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle; }
     .edit-btn, .del-btn { font-size: 10px; padding: 3px 5px; display: block; width: 100%; margin-bottom: 2px; text-align: center; }
-    .approved-mark { font-size: 11px; }
+    .done-mark { font-size: 11px; }
 
     /* 수정 모달 모바일 */
     .modal-box { width: 95vw !important; max-height: 90vh; overflow-y: auto;
@@ -628,7 +635,7 @@
         <div class="table-wrap">
           <table>
             <thead><tr>
-              <th class="col-no col-hide-mob">#</th><th>일정</th><th>담당자</th><th>구분</th><th>제품명 / 행사명</th><th class="col-hide-mob">비고</th><th class="col-hide-mob">제출시각</th><th class="col-hide-mob">승인여부</th><th>수정/삭제</th>
+              <th class="col-no col-hide-mob">#</th><th>일정</th><th>담당자</th><th>구분</th><th>제품명 / 행사명</th><th class="col-hide-mob">비고</th><th class="col-hide-mob">제출시각</th><th class="col-hide-mob">완료여부</th><th>수정/삭제</th>
             </tr></thead>
             <tbody id="promo-teamTableBody">
               <tr class="empty-row"><td colspan="9">좌측 메뉴에서 팀을 선택하세요.</td></tr>
@@ -691,7 +698,7 @@
         <div class="table-wrap">
           <table>
             <thead><tr>
-              <th class="col-no col-hide-mob">#</th><th>일정</th><th>담당팀</th><th class="col-hide-mob">담당자</th><th>구분</th><th>제품명 / 행사명</th><th class="col-hide-mob">비고</th><th class="col-hide-mob">제출시각</th><th class="col-hide-mob">승인여부</th><th></th>
+              <th class="col-no col-hide-mob">#</th><th>일정</th><th>담당팀</th><th class="col-hide-mob">담당자</th><th>구분</th><th>제품명 / 행사명</th><th class="col-hide-mob">비고</th><th class="col-hide-mob">제출시각</th><th class="col-hide-mob">완료여부</th><th></th>
             </tr></thead>
             <tbody id="promo-allTableBody"></tbody>
           </table>
@@ -858,7 +865,7 @@
         <div class="table-wrap">
           <table>
             <thead><tr class="purple">
-              <th class="col-no col-hide-mob">#</th><th>일정</th><th>담당자</th><th>구분</th><th>제품명</th><th class="col-hide-mob">비고</th><th class="col-hide-mob">제출시각</th><th class="col-hide-mob">승인여부</th><th>수정/삭제</th>
+              <th class="col-no col-hide-mob">#</th><th>일정</th><th>담당자</th><th>구분</th><th>제품명</th><th class="col-hide-mob">비고</th><th class="col-hide-mob">제출시각</th><th class="col-hide-mob">완료여부</th><th>수정/삭제</th>
             </tr></thead>
             <tbody id="tasting-teamTableBody">
               <tr class="empty-row"><td colspan="9">좌측 메뉴에서 팀을 선택하세요.</td></tr>
@@ -921,7 +928,7 @@
         <div class="table-wrap">
           <table>
             <thead><tr class="purple">
-              <th class="col-no col-hide-mob">#</th><th>일정</th><th>담당팀</th><th class="col-hide-mob">담당자</th><th>구분</th><th>제품명</th><th class="col-hide-mob">비고</th><th class="col-hide-mob">제출시각</th><th class="col-hide-mob">승인여부</th><th></th>
+              <th class="col-no col-hide-mob">#</th><th>일정</th><th>담당팀</th><th class="col-hide-mob">담당자</th><th>구분</th><th>제품명</th><th class="col-hide-mob">비고</th><th class="col-hide-mob">제출시각</th><th class="col-hide-mob">완료여부</th><th></th>
             </tr></thead>
             <tbody id="tasting-allTableBody"></tbody>
           </table>
@@ -1159,6 +1166,32 @@ function parseScheduleYM(s) {
   return null;
 }
 
+// ── 완료 여부 (일정 종료일 기준 자동 판정) ───────────
+function scheduleEndDate(s) {
+  if (!s) return null;
+  const parts = s.split('~').map(p => p.trim()).filter(Boolean);
+  const last  = parts[parts.length - 1] || '';
+  let m = last.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+  m = last.match(/^(\d{4})-(\d{2})$/);
+  if (m) return new Date(+m[1], +m[2], 0);   // 해당 월의 말일
+  return null;
+}
+
+function isDone(d) {
+  const end = scheduleEndDate(d && d.schedule);
+  if (!end) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return end < today;
+}
+
+function doneCell(d) {
+  return isDone(d)
+    ? '<span class="done-mark" title="일정 종료">✓ 완료</span>'
+    : '<span class="ongoing-mark">진행중</span>';
+}
+
 function fmtSchedule(s) {
   if (!s) return '';
   const parts = s.split('~').map(p => {
@@ -1241,7 +1274,7 @@ function renderTeamTable(section) {
     tbody.innerHTML = `<tr class="empty-row"><td colspan="9">📭 제출된 항목이 없습니다.</td></tr>`;
   } else {
   tbody.innerHTML = data.map((d, i) => `
-    <tr>
+    <tr class="${isDone(d) ? 'done-row' : ''}">
       <td class="col-no col-hide-mob">${i+1}</td>
       <td class="col-schedule">${esc(fmtSchedule(d.schedule))}</td>
       <td>${esc(d.name)}</td>
@@ -1249,7 +1282,7 @@ function renderTeamTable(section) {
       <td class="col-product">${esc(d.product)}</td>
       <td class="col-note col-hide-mob">${esc(d.note||'')}</td>
       <td class="col-ts col-hide-mob">${esc(d.submitted_at||'')}</td>
-      <td class="col-hide-mob" style="text-align:center">${d.approved ? '<span class="approved-mark" title="승인됨">✓ 승인</span>' : '<span style="color:var(--muted);font-size:12px">—</span>'}</td>
+      <td class="col-hide-mob" style="text-align:center">${doneCell(d)}</td>
       <td style="white-space:nowrap">
         <button class="edit-btn" onclick="openEditById('${d.id}','${section}')">수정</button>
         <button class="del-btn"  onclick="deleteEntry('${d.id}','${section}')">삭제</button>
@@ -1314,7 +1347,7 @@ function applyFilter(section) {
     return;
   }
   tbody.innerHTML = filtered.map((d, i) => `
-    <tr>
+    <tr class="${isDone(d) ? 'done-row' : ''}">
       <td class="col-no col-hide-mob">${i+1}</td>
       <td class="col-schedule">${esc(fmtSchedule(d.schedule))}</td>
       <td class="col-team">${esc(d.team)}</td>
@@ -1323,7 +1356,7 @@ function applyFilter(section) {
       <td class="col-product">${esc(d.product)}</td>
       <td class="col-note col-hide-mob">${esc(d.note||'')}</td>
       <td class="col-ts col-hide-mob">${esc(d.submitted_at||'')}</td>
-      <td class="col-hide-mob" style="text-align:center">${d.approved ? '<span class="approved-mark" title="승인됨">✓ 승인</span>' : '<span style="color:var(--muted);font-size:12px">—</span>'}</td>
+      <td class="col-hide-mob" style="text-align:center">${doneCell(d)}</td>
       <td style="white-space:nowrap">
         <button class="edit-btn" onclick="openEditById('${d.id}','${section}')">수정</button>
         <button class="del-btn"  onclick="deleteEntry('${d.id}','${section}')">삭제</button>
@@ -1883,7 +1916,7 @@ function showCalTip(event, el) {
       <span class="ctt-schedule">${esc(fmtSchedule(e.schedule))}</span>
     </div>
     ${e.note ? `<div class="ctt-note">${esc(e.note)}</div>` : ''}
-    ${e.approved ? '<div class="ctt-approved">✓ 승인됨</div>' : ''}
+    ${isDone(e) ? '<div class="ctt-done">✓ 완료된 일정</div>' : ''}
   `;
   tip.classList.remove('hidden');
 

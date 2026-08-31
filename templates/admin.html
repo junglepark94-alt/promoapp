@@ -121,8 +121,13 @@
   .tag-박람회  { background:#fff7ed; color:#c2410c; }
   .tag-기타    { background:#f3f4f6; color:#4b5563; }
 
-  .approved-row { background:#f0fdf4 !important; }
-  .approved-mark { color:var(--success); font-weight:700; font-size:14px; margin-right:3px; }
+  tbody tr.done-row { background:#f1f0ef !important; }
+  tbody tr.done-row:hover { background:#e8e6e5 !important; }
+  tbody tr.done-row td { color:#8b8785; }
+  tbody tr.done-row .col-schedule { color:#8b8785; }
+  tbody tr.done-row .tag { opacity:0.5; }
+  .done-mark { color:#6b7280; font-weight:700; font-size:13px; }
+  .ongoing-mark { color:var(--muted); font-size:12px; }
   .history-badge { display:inline-flex; align-items:center; gap:4px; background:#fef9c3; color:#92400e;
     border:1px solid #fde68a; border-radius:12px; padding:2px 8px; font-size:11px; font-weight:600;
     cursor:pointer; transition:all 0.15s; }
@@ -310,11 +315,11 @@
         </select>
       </div>
       <div class="filter-group">
-        <label>승인 상태</label>
-        <select id="filterApproved" onchange="applyFilter()">
+        <label>완료 상태</label>
+        <select id="filterDone" onchange="applyFilter()">
           <option value="">전체</option>
-          <option value="approved">승인됨</option>
-          <option value="pending">미승인</option>
+          <option value="done">완료</option>
+          <option value="ongoing">진행중</option>
         </select>
       </div>
       <div class="filter-group">
@@ -346,7 +351,7 @@
             <th class="col-hide-mob">비고</th>
             <th class="col-hide-mob">제출시각</th>
             <th class="col-hide-mob">수정이력</th>
-            <th>승인</th>
+            <th>완료</th>
           </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -547,13 +552,13 @@ async function loadData() {
 }
 
 function renderStats() {
-  const total    = allData.length;
-  const approved = allData.filter(d => d.approved).length;
-  const edited   = allData.filter(d => d.updated_at).length;
+  const total  = allData.length;
+  const done   = allData.filter(isDone).length;
+  const edited = allData.filter(d => d.updated_at).length;
   document.getElementById('statsArea').innerHTML = `
     <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">총 항목</div></div>
-    <div class="stat-card"><div class="stat-num green">${approved}</div><div class="stat-label">승인됨</div></div>
-    <div class="stat-card"><div class="stat-num warn">${total - approved}</div><div class="stat-label">미승인</div></div>
+    <div class="stat-card"><div class="stat-num">${done}</div><div class="stat-label">완료</div></div>
+    <div class="stat-card"><div class="stat-num green">${total - done}</div><div class="stat-label">진행중</div></div>
     <div class="stat-card"><div class="stat-num">${edited}</div><div class="stat-label">수정됨</div></div>
   `;
 }
@@ -561,14 +566,14 @@ function renderStats() {
 // ── 필터 ─────────────────────────────────────────────────
 function applyFilter() {
   const team     = document.getElementById('filterTeam').value;
-  const approved = document.getElementById('filterApproved').value;
+  const doneVal  = document.getElementById('filterDone').value;
   const edited   = document.getElementById('filterEdited').value;
   const search   = document.getElementById('filterSearch').value.toLowerCase();
 
   const filtered = allData.filter(d => {
     if (team   && d.team !== team) return false;
-    if (approved === 'approved' && !d.approved) return false;
-    if (approved === 'pending'  &&  d.approved) return false;
+    if (doneVal === 'done'    && !isDone(d)) return false;
+    if (doneVal === 'ongoing' &&  isDone(d)) return false;
     if (edited   === 'edited'   && !d.updated_at) return false;
     if (edited   === 'original' &&  d.updated_at) return false;
     if (search && !d.product.toLowerCase().includes(search) &&
@@ -580,7 +585,7 @@ function applyFilter() {
 }
 
 function resetFilters() {
-  ['filterTeam','filterApproved','filterEdited','filterSearch'].forEach(id => {
+  ['filterTeam','filterDone','filterEdited','filterSearch'].forEach(id => {
     const el = document.getElementById(id);
     el.value = '';
   });
@@ -602,6 +607,26 @@ function fmtSchedule(s) {
   return parts.join(' ~ ');
 }
 
+// ── 완료 여부 (일정 종료일 기준 자동 판정) ───────────
+function scheduleEndDate(s) {
+  if (!s) return null;
+  const parts = s.split('~').map(p => p.trim()).filter(Boolean);
+  const last  = parts[parts.length - 1] || '';
+  let m = last.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+  m = last.match(/^(\d{4})-(\d{2})$/);
+  if (m) return new Date(+m[1], +m[2], 0);   // 해당 월의 말일
+  return null;
+}
+
+function isDone(d) {
+  const end = scheduleEndDate(d && d.schedule);
+  if (!end) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return end < today;
+}
+
 function renderTable(data) {
   const tbody = document.getElementById('tableBody');
   if (!data.length) {
@@ -613,34 +638,24 @@ function renderTable(data) {
     const histBadge = history.length
       ? `<button class="history-badge" onclick="showHist('${d.id}')">✎ ${history.length}회</button>`
       : '<span style="color:var(--muted);font-size:12px">—</span>';
-    const appBtn = d.approved
-      ? `<button class="btn btn-sm btn-warn" onclick="toggleApprove('${d.id}',false)">승인취소</button>`
-      : `<button class="btn btn-sm btn-success" onclick="toggleApprove('${d.id}',true)">승인하기</button>`;
+    const done      = isDone(d);
+    const doneBadge = done
+      ? '<span class="done-mark" title="일정 종료">✓ 완료</span>'
+      : '<span class="ongoing-mark">진행중</span>';
     return `
-      <tr class="${d.approved ? 'approved-row' : ''}">
+      <tr class="${done ? 'done-row' : ''}">
         <td class="col-no col-hide-mob">${i+1}</td>
         <td class="col-schedule">${esc(fmtSchedule(d.schedule))}</td>
         <td>${esc(d.team)}</td>
         <td class="col-hide-mob">${esc(d.name)}</td>
         <td><span class="tag tag-${d.category}">${esc(d.category)}</span></td>
-        <td class="col-product">${d.approved ? '<span class="approved-mark">✓</span>' : ''}${esc(d.product)}</td>
+        <td class="col-product">${esc(d.product)}</td>
         <td class="col-note col-hide-mob">${esc(d.note||'')}</td>
         <td class="col-ts col-hide-mob">${esc(d.submitted_at||'')}</td>
         <td class="col-hide-mob">${histBadge}</td>
-        <td>${appBtn}</td>
+        <td>${doneBadge}</td>
       </tr>`;
   }).join('');
-}
-
-// ── 승인 토글 ─────────────────────────────────────────────
-async function toggleApprove(id, approve) {
-  const res  = await fetch(`/api/approve/${id}`, {
-    method: 'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({action: approve ? 'approve' : 'unapprove'})
-  });
-  const data = await res.json();
-  if (data.success) { showToast(approve ? '승인 완료!' : '승인 취소됨', 'success'); loadData(); }
-  else showToast(data.message || '오류 발생', 'error');
 }
 
 // ── 히스토리 모달 ─────────────────────────────────────────
