@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for, session
 import json, os, io
-from datetime import datetime
+from datetime import datetime, date
+from calendar import monthrange
 from contextlib import contextmanager
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
@@ -287,11 +288,35 @@ def clear_team():
         save_data([d for d in load_data() if d.get("team") != team])
     return jsonify({"success": True})
 
+# ── 완료 여부 (일정 종료일 기준 자동 판정) ────────────────
+def schedule_end_date(schedule):
+    """일정 문자열의 종료일을 반환. 판정 불가한 형식이면 None."""
+    if not schedule:
+        return None
+    parts = [p.strip() for p in str(schedule).split("~") if p.strip()]
+    if not parts:
+        return None
+    last = parts[-1]
+    try:
+        return datetime.strptime(last, "%Y-%m-%d").date()
+    except ValueError:
+        pass
+    try:
+        dt = datetime.strptime(last, "%Y-%m")
+        return date(dt.year, dt.month, monthrange(dt.year, dt.month)[1])
+    except ValueError:
+        return None
+
+def is_done(entry):
+    end = schedule_end_date(entry.get("schedule"))
+    return bool(end and end < date.today())
+
 # ── 엑셀 내보내기 ─────────────────────────────────────────
 @app.route("/export")
 def export():
     section = request.args.get("section", "promo")
-    data    = load_data(section=section)
+    # 완료된(일정이 지난) 항목은 제외하고 진행중 항목만 내보낸다
+    data    = [d for d in load_data(section=section) if not is_done(d)]
 
     wb          = openpyxl.Workbook()
     header_font = Font(name="맑은 고딕", bold=True, size=10, color="FFFFFF")
