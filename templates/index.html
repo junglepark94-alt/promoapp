@@ -447,7 +447,7 @@
         팀별 일정 확인 <span class="nav-arrow">▾</span>
       </button>
       <div class="nav-dropdown" id="promo-teamDropdown">
-        {% for t in teams %}
+        {% for t in teams if t != '콘텐츠전략팀' %}
         <button class="nav-sub-item" data-team="{{ t }}" onclick="selectTeam('promo', this.dataset.team)">{{ t }}</button>
         {% endfor %}
       </div>
