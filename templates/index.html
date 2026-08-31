@@ -1269,6 +1269,10 @@ function renderTeamTable(section) {
     if (mo !== 'all' && (!ym || ym.month !== mo)) return false;
     return true;
   });
+
+  // 진행중 항목을 위로, 완료된 항목을 아래로 (그룹 내 기존 순서 유지)
+  data.sort((a, b) => (isDone(a) ? 1 : 0) - (isDone(b) ? 1 : 0));
+
   const tbody = document.getElementById(section + '-teamTableBody');
   if (!data.length) {
     tbody.innerHTML = `<tr class="empty-row"><td colspan="9">📭 제출된 항목이 없습니다.</td></tr>`;
