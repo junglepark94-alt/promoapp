@@ -259,6 +259,7 @@
   .col-product { font-weight:500; max-width:220px; }
   .col-note { color:var(--muted); font-size:12px; max-width:260px; }
   .col-ts { color:var(--muted); font-size:11px; white-space:nowrap; font-family:'DM Mono',monospace; }
+  .ts-edited { display:block; color:#b45309; font-size:10px; margin-top:2px; }
   .del-btn  { background:none; border:1px solid #fca5a5; color:var(--danger); cursor:pointer; border-radius:5px; padding:3px 8px; font-size:11px; font-family:'Noto Sans KR',sans-serif; transition:all 0.15s; }
   .del-btn:hover  { background:#fee2e2; }
   .edit-btn { background:none; border:1px solid var(--border); color:var(--muted); cursor:pointer; border-radius:5px; padding:3px 8px; font-size:11px; font-family:'Noto Sans KR',sans-serif; transition:all 0.15s; margin-right:4px; }
@@ -1192,6 +1193,18 @@ function doneCell(d) {
     : '<span class="ongoing-mark">진행중</span>';
 }
 
+function shortTs(s) {
+  const m = String(s || '').match(/^\d{4}-(\d{2}-\d{2})[ T](\d{2}:\d{2})/);
+  return m ? `${m[1]} ${m[2]}` : String(s || '');
+}
+
+// 제출시각 셀 — 수정된 항목은 마지막 수정 시각을 함께 표시
+function tsCell(d) {
+  const base = esc(d.submitted_at || '');
+  if (!d.updated_at) return base;
+  return `${base}<span class="ts-edited" title="마지막 수정: ${esc(d.updated_at)}">(수정: ${esc(shortTs(d.updated_at))})</span>`;
+}
+
 function fmtSchedule(s) {
   if (!s) return '';
   const parts = s.split('~').map(p => {
@@ -1285,7 +1298,7 @@ function renderTeamTable(section) {
       <td><span class="tag tag-${d.category}">${esc(d.category)}</span></td>
       <td class="col-product">${esc(d.product)}</td>
       <td class="col-note col-hide-mob">${esc(d.note||'')}</td>
-      <td class="col-ts col-hide-mob">${esc(d.submitted_at||'')}</td>
+      <td class="col-ts col-hide-mob">${tsCell(d)}</td>
       <td class="col-hide-mob" style="text-align:center">${doneCell(d)}</td>
       <td style="white-space:nowrap">
         <button class="edit-btn" onclick="openEditById('${d.id}','${section}')">수정</button>
@@ -1362,7 +1375,7 @@ function applyFilter(section) {
       <td><span class="tag tag-${d.category}">${esc(d.category)}</span></td>
       <td class="col-product">${esc(d.product)}</td>
       <td class="col-note col-hide-mob">${esc(d.note||'')}</td>
-      <td class="col-ts col-hide-mob">${esc(d.submitted_at||'')}</td>
+      <td class="col-ts col-hide-mob">${tsCell(d)}</td>
       <td class="col-hide-mob" style="text-align:center">${doneCell(d)}</td>
       <td style="white-space:nowrap">
         <button class="edit-btn" onclick="openEditById('${d.id}','${section}')">수정</button>
@@ -1770,7 +1783,7 @@ function renderContentList() {
       <td><span class="tag" style="background:${color}22;color:${color};border:1px solid ${color}55">${esc(d.category)}</span></td>
       <td class="col-product">${esc(d.product)}</td>
       <td class="col-note col-hide-mob">${esc(d.note||'')}</td>
-      <td class="col-ts col-hide-mob">${esc(d.submitted_at||'')}</td>
+      <td class="col-ts col-hide-mob">${tsCell(d)}</td>
     </tr>`;
   }).join('');
 }
